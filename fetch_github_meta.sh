@@ -12,6 +12,9 @@ echo "Fetching commit info..."
 COMMIT_API="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits/${COMMIT_SHA}"
 COMMIT_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "$COMMIT_API")
 
+echo $COMMIT_API
+echo $COMMIT_DATA
+
 echo "🔹 Commit Message:"
 echo "$COMMIT_DATA" | jq -r '.commit.message'
 
