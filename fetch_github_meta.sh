@@ -13,8 +13,8 @@ GITHUB_TOKEN="${GITHUB_TOKEN}"
 REPO_OWNER="sanadivya"
 REPO_NAME="gitinfo-demo"
 ENV="dev"
-PROJECT="demo"
-SERVICE="demo"
+PROJECT_ID="demo"
+SERVICE_NAME="demo"
 VERSION="V0.1"
 COMMIT_SHA=$(git rev-parse HEAD)
 
@@ -34,22 +34,33 @@ echo "API URL: $COMMIT_API"
 # echo "$COMMIT_DATA" | jq -r '.commit.author.name'
 COMMIT_MESSAGE=$(echo "$COMMIT_DATA" | jq -r '.commit.message')
 COMMIT_AUTHOR=$(echo "$COMMIT_DATA" | jq -r '.commit.author.name')
+echo "$COMMIT_MESSAGE"
+echo "$COMMIT_AUTHOR"
 
 echo "Checking PRs associated with the commit..."
 PR_API="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits/${COMMIT_SHA}/pulls"
 PR_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.groot-preview+json" "$PR_API")
 
+echo "$PR_API"
 PR_COUNT=$(echo "$PR_DATA" | jq 'length')
 
 # 🔧 Build Git Details section
 if [ "$PR_COUNT" -gt 0 ]; then
     echo "✅ PR Info Found:"
-    echo "PR Number:   $(echo "$PR_DATA" | jq -r '.[0].number')"
-    echo "PR Title:    $(echo "$PR_DATA" | jq -r '.[0].title')"
+    # echo "PR Number:   $(echo "$PR_DATA" | jq -r '.[0].number')"
+    # echo "PR Title:    $(echo "$PR_DATA" | jq -r '.[0].title')"
+    PR_NUMBER=$(echo "$PR_DATA" | jq -r '.[0].number')
+    PR_TITLE=$(echo "$PR_DATA" | jq -r '.[0].title')
+    PR_SOURCE=$(echo "$PR_DATA" | jq -r '.[0].head.ref')
+    PR_TARGET=$(echo "$PR_DATA" | jq -r '.[0].base.ref')
+    echo "$PR_NUMBER"
+    echo "$PR_TITLE"
+    echo "$PR_SOURCE"
+    echo "$PR_TARGET"
     echo "Source → Target: $(echo "$PR_DATA" | jq -r '.[0].head.ref') → $(echo "$PR_DATA" | jq -r '.[0].base.ref')"
-    DETAILS="**PR Title**: ${PR_TITLE}\n**PR Number**: #${PR_NUMBER}\n**Branch**: ${PR_SOURCE} → ${PR_TARGET}"
+    DETAILS="\n- **PR Title**: ${PR_TITLE}\n- **PR Number**: #${PR_NUMBER}\n- **Branch**: ${PR_SOURCE} → ${PR_TARGET}"
 else
-    DETAILS="\n- **Commit Message**: `${COMMIT_MESSAGE}`\n- **Author**: `${COMMIT_AUTHOR}`\n"
+    DETAILS="\n- **Commit Message**: ${COMMIT_MESSAGE}\n- **Author**: ${COMMIT_AUTHOR}\n"
 fi
 
 curl -X POST -H "Content-Type: application/json" \
@@ -62,7 +73,7 @@ curl -X POST -H "Content-Type: application/json" \
     "sections": [
     {
         "activityTitle": "Deployment Details",
-        "text": "\n- **Environment**: `${ENV}`\n- **Project**: `${PROJECT_ID}`\n- **Service**: `${SERVICE_NAME}`\n- **Version**: `$SHORT_SHA`"
+        "text": "\n- **Environment**: '"${ENV}"'\n- **Project**: '"${PROJECT_ID}"'\n- **Service**: '"${SERVICE_NAME}"'\n- **Version**: '"${VERSION}"'"
     },
     {
         "activityTitle": "Git Info",
