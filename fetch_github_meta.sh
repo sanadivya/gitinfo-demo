@@ -19,7 +19,7 @@ COMMIT_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "$COMMIT_API")
 
 echo "API URL: $COMMIT_API"
 echo "Commit Info:"
-echo $COMMIT_DATA
+echo "$COMMIT_DATA"
 
 echo "🔹 Commit Message:"
 echo "$COMMIT_DATA" | jq -r '.commit.message'
