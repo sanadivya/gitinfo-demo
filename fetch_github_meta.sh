@@ -1,6 +1,6 @@
 #!/bin/sh
 
-GITHUB_TOKEN=${GITHUB_TOKEN}
+GITHUB_TOKEN="${GITHUB_TOKEN}"
 
 echo ${GITHUB_TOKEN}
 
@@ -10,16 +10,14 @@ else
   echo "✅ GITHUB_TOKEN is set"
 fi
 
-
 REPO_OWNER="sanadivya"
 REPO_NAME="gitinfo-demo"
 COMMIT_SHA=$(git rev-parse HEAD)
 
-echo "$COMMIT_SHA"
-
 echo "Fetching commit info..."
 COMMIT_API="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits/${COMMIT_SHA}"
 COMMIT_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "$COMMIT_API")
+
 
 echo "API URL: $COMMIT_API"
 # echo "Commit Info:"
@@ -47,4 +45,6 @@ echo "$COMMIT_DATA" | jq -r '.commit.author.name'
 #   echo "Source → Target: $(echo "$PR_DATA" | jq -r '.[0].head.ref') → $(echo "$PR_DATA" | jq -r '.[0].base.ref')"
 # else
 #   echo "⚠️  No PR associated with this commit."
+
 # fi
+
