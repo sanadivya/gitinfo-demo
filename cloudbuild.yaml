@@ -82,7 +82,7 @@ steps:
             COMMIT_SHA="${SHORT_SHA}"
 
             echo "Fetching commit info..."
-            COMMIT_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/${COMMIT_SHA}"
+            COMMIT_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/"${COMMIT_SHA}""
             COMMIT_DATA=$(curl -s -H "Authorization: token ${_GITHUB_TOKEN}" "$COMMIT_API")
 
             echo "API URL: '$COMMIT_API'"
