@@ -1,82 +1,3 @@
-# substitutions:
-#   _ENV: dev
-#   _PROJECT_ID: demo
-#   _SERVICE_NAME: demo
-#   _VERSION: V0.1
-#   _REPO_OWNER: sanadivya
-#   _REPO_NAME: gitinfo-demo
-#   _TEAMS_WEBHOOK_URL: https://pakompetens.webhook.office.com/webhookb2/3b361490-df1e-4317-91e4-c3aec626287f@fdb820d5-bcd4-43fc-ac72-c1638a72ae9c/IncomingWebhook/09fd98c09d6b4b26a21c1a22bc2c02e7/da953398-22b5-4e5d-b7c2-1ae89b32899e/V2mNV7H_or53WYxH5WJ0zZ97U62fWP-I_r_iWR3ox9k781
-
-# steps:
-#   - name: alpine
-#     entrypoint: sh
-#     secretEnv: ['GITHUB_TOKEN']
-#     args:
-#       - -c
-#       - |
-#         echo "📦 Installing tools..."
-#         apk add --no-cache git curl jq
-
-#         echo "✅ Checking GITHUB_TOKEN..."
-#         if [ -z "$GITHUB_TOKEN" ]; then
-#           echo "❌ GITHUB_TOKEN not set"
-#           exit 1
-#         fi
-
-#         echo "🔍 Getting commit SHA..."
-#         git init
-#         git remote add origin https://github.com/${_REPO_OWNER}/${_REPO_NAME}.git
-#         git fetch --depth=1 origin main
-#         COMMIT_SHA=$(git rev-parse FETCH_HEAD)
-
-#         echo "Fetching commit info..."
-#         COMMIT_API="https://api.github.com/repos/${_REPO_OWNER}/${_REPO_NAME}/commits/${COMMIT_SHA}"
-#         COMMIT_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "$COMMIT_API")
-#         COMMIT_MESSAGE=$(echo "$COMMIT_DATA" | jq -r '.commit.message')
-#         COMMIT_AUTHOR=$(echo "$COMMIT_DATA" | jq -r '.commit.author.name')
-
-#         echo "Checking PRs associated with the commit..."
-#         PR_API="https://api.github.com/repos/${_REPO_OWNER}/${_REPO_NAME}/commits/${COMMIT_SHA}/pulls"
-#         PR_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.groot-preview+json" "$PR_API")
-#         PR_COUNT=$(echo "$PR_DATA" | jq 'length')
-
-#         if [ "$PR_COUNT" -gt 0 ]; then
-#           echo "✅ PR Info Found"
-#           PR_NUMBER=$(echo "$PR_DATA" | jq -r '.[0].number')
-#           PR_TITLE=$(echo "$PR_DATA" | jq -r '.[0].title')
-#           PR_SOURCE=$(echo "$PR_DATA" | jq -r '.[0].head.ref')
-#           PR_TARGET=$(echo "$PR_DATA" | jq -r '.[0].base.ref')
-#           DETAILS="\n- **PR Title**: ${PR_TITLE}\n- **PR Number**: #${PR_NUMBER}\n- **Branch**: ${PR_SOURCE} → ${PR_TARGET}"
-#         else
-#           DETAILS="\n- **Commit Message**: ${COMMIT_MESSAGE}\n- **Author**: ${COMMIT_AUTHOR}"
-#         fi
-
-#         echo "📣 Sending Teams notification..."
-#         curl -X POST -H "Content-Type: application/json" \
-#           -d '{
-#             "@type": "MessageCard",
-#             "@context": "http://schema.org/extensions",
-#             "summary": "Deployment Notification",
-#             "themeColor": "00FF00",
-#             "title": "✅ New version deployed to '"${_ENV}"' environment",
-#             "sections": [
-#               {
-#                 "activityTitle": "Deployment Details",
-#                 "text": "\n- **Environment**: '"${_ENV}"'\n- **Project**: '"${_PROJECT_ID}"'\n- **Service**: '"${_SERVICE_NAME}"'\n- **Version**: '"${_VERSION}"'"
-#               },
-#               {
-#                 "activityTitle": "Git Info",
-#                 "text": "'"${DETAILS}"'"
-#               }
-#             ]
-#           }' "${_TEAMS_WEBHOOK_URL}"
-
-# availableSecrets:
-#   secretManager:
-#     secrets:
-#       - versionName: projects/YOUR_PROJECT_ID/secrets/GITHUB_TOKEN/versions/latest
-#         env: GITHUB_TOKEN
-
 substitutions:
   _ENV: dev
   _PROJECT_ID: articulate-area-464808-q4
@@ -162,7 +83,7 @@ steps:
             COMMIT_SHA="${SHORT_SHA}"
 
             echo "Fetching commit info..."
-            COMMIT_API="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits/${COMMIT_SHA}"
+            COMMIT_API="https://api.github.com/repos/'${REPO_OWNER}'/'${REPO_NAME}'/commits/${SHORT_SHA}"
             COMMIT_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "$COMMIT_API")
 
             echo "API URL: $COMMIT_API"
@@ -170,7 +91,7 @@ steps:
             COMMIT_AUTHOR=$(echo "$COMMIT_DATA" | jq -r '.commit.author.name')
 
             echo "Checking PRs associated with the commit..."
-            PR_API="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits/${COMMIT_SHA}/pulls"
+            PR_API="https://api.github.com/repos/'${REPO_OWNER}'/'${REPO_NAME}'/commits/${SHORT_SHA}/pulls"
             PR_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.groot-preview+json" "$PR_API")
 
             PR_COUNT=$(echo "$PR_DATA" | jq 'length')
