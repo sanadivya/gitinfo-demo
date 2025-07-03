@@ -2,13 +2,13 @@
 
 GITHUB_TOKEN="${GITHUB_TOKEN}"
 
-# echo ${GITHUB_TOKEN}
+echo "${GITHUB_TOKEN}"
 
-# if [ -z "$GITHUB_TOKEN" ]; then
-#   echo "❌ GITHUB_TOKEN is not set"
-# else
-#   echo "✅ GITHUB_TOKEN is set"
-# fi
+if [ -z "$GITHUB_TOKEN" ]; then
+  echo "❌ GITHUB_TOKEN is not set"
+else
+  echo "✅ GITHUB_TOKEN is set"
+fi
 
 REPO_OWNER="sanadivya"
 REPO_NAME="gitinfo-demo"
@@ -25,38 +25,33 @@ COMMIT_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "$COMMIT_API")
 
 echo "API URL: $COMMIT_API"
 # echo "Commit Info:"
-# echo "$COMMIT_DATA"
-
-# echo "🔹 Commit Message:"
-# echo "$COMMIT_DATA" | jq -r '.commit.message'
-
-# echo "🔹 Commit Author:"
-# echo "$COMMIT_DATA" | jq -r '.commit.author.name'
 COMMIT_MESSAGE=$(echo "$COMMIT_DATA" | jq -r '.commit.message')
 COMMIT_AUTHOR=$(echo "$COMMIT_DATA" | jq -r '.commit.author.name')
-echo "$COMMIT_MESSAGE"
-echo "$COMMIT_AUTHOR"
 
 echo "Checking PRs associated with the commit..."
 PR_API="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits/${COMMIT_SHA}/pulls"
 PR_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.groot-preview+json" "$PR_API")
 
-echo "$PR_API"
+echo "🔎 Raw PR data response:"
+echo "$PR_DATA" | jq .
+
 PR_COUNT=$(echo "$PR_DATA" | jq 'length')
 
 # 🔧 Build Git Details section
 if [ "$PR_COUNT" -gt 0 ]; then
     echo "✅ PR Info Found:"
-    # echo "PR Number:   $(echo "$PR_DATA" | jq -r '.[0].number')"
-    # echo "PR Title:    $(echo "$PR_DATA" | jq -r '.[0].title')"
+    
+    # Assign variables
     PR_NUMBER=$(echo "$PR_DATA" | jq -r '.[0].number')
     PR_TITLE=$(echo "$PR_DATA" | jq -r '.[0].title')
     PR_SOURCE=$(echo "$PR_DATA" | jq -r '.[0].head.ref')
     PR_TARGET=$(echo "$PR_DATA" | jq -r '.[0].base.ref')
-    echo "$PR_NUMBER"
-    echo "$PR_TITLE"
-    echo "$PR_SOURCE"
-    echo "$PR_TARGET"
+
+    # Optional: print values
+    echo "PR Number:   $PR_NUMBER"
+    echo "PR Title:    $PR_TITLE"
+    echo "Source → Target: $PR_SOURCE → $PR_TARGET"
+
     echo "Source → Target: $(echo "$PR_DATA" | jq -r '.[0].head.ref') → $(echo "$PR_DATA" | jq -r '.[0].base.ref')"
     DETAILS="\n- **PR Title**: ${PR_TITLE}\n- **PR Number**: #${PR_NUMBER}\n- **Branch**: ${PR_SOURCE} → ${PR_TARGET}"
 else
