@@ -82,7 +82,7 @@ steps:
 
             echo "Fetching commit info..."
             COMMIT_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/${COMMIT_SHA}"
-            COMMIT_DATA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "$COMMIT_API")
+            COMMIT_DATA=$(curl -s -H "Authorization: token '${GITHUB_TOKEN}'" "$COMMIT_API")
 
             echo "API URL: $COMMIT_API"
             COMMIT_MESSAGE=$(echo "$COMMIT_DATA" | jq -r '.commit.message')
