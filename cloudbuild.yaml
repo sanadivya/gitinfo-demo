@@ -165,14 +165,14 @@ steps:
             EOF
             )" "${_TEAMS_WEBHOOK_URL}"
         else
-          COMMIT_SHA="${SHORT_SHA}"
+          COMMIT_SHA="$$SHORT_SHA"
           echo "Fetching commit info..."
-          COMMIT_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$${COMMIT_SHA}"
+          COMMIT_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA"
           COMMIT_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "$$COMMIT_API")
           COMMIT_MESSAGE=$(echo "$$COMMIT_DATA" | jq -r '.commit.message')
           COMMIT_AUTHOR=$(echo "$$COMMIT_DATA" | jq -r '.commit.author.name')
 
-          PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/${SHORT_SHA}/pulls"
+          PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$SHORT_SHA/pulls"
           PR_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
           PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
 
