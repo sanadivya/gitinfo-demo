@@ -172,13 +172,14 @@ steps:
           PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
           PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
           PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
+          PR_DESCRIPTION=$(echo "$PR_DATA" | jq -r '.body')
 
           if [ "$$PR_COUNT" -gt 0 ]; then
             PR_NUMBER=$(echo "$$PR_DATA" | jq -r '.[0].number')
             PR_TITLE=$(echo "$$PR_DATA" | jq -r '.[0].title')
             PR_SOURCE=$(echo "$$PR_DATA" | jq -r '.[0].head.ref')
             PR_TARGET=$(echo "$$PR_DATA" | jq -r '.[0].base.ref')
-            DETAILS="\n- **PR Title**: $${PR_TITLE}\n- **PR Number**: #$${PR_NUMBER}\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}"
+            DETAILS="\n- **PR Title**: $${PR_TITLE}\n- **PR Number**: #$${PR_NUMBER}\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}\n- **PR Description**: $${PR_DESCRIPTION}"
           else
             DETAILS="\n- **Commit Message**: $${COMMIT_MESSAGE}\n- **Author**: $${COMMIT_AUTHOR}"
           fi
