@@ -195,7 +195,7 @@ steps:
                 },
                 {
                   "activityTitle": "Git Info",
-                  "text": "${DETAILS}"
+                  "text": "$${DETAILS}"
                 }
               ]
             }
