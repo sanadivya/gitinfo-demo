@@ -149,8 +149,7 @@ steps:
         if [ -f /workspace/failure_marker ]; then
           echo "❌ Failure detected. Sending failure message..."
           curl -X POST -H "Content-Type: application/json" \
-          -d
-            '{
+          -d '{
               "@type": "MessageCard",
               "@context": "http://schema.org/extensions",
               "summary": "Deployment Failure",
@@ -185,8 +184,7 @@ steps:
           fi
 
           curl -X POST -H "Content-Type: application/json" \
-          -d 
-            '{
+          -d '{
               "@type": "MessageCard",
               "@context": "http://schema.org/extensions",
               "summary": "Deployment Notification",
@@ -202,5 +200,5 @@ steps:
                   "text": "$${DETAILS}"
                 }
               ]
-            }' "$$TEAMS_WEBHOOK_URL"
+          }' "$$TEAMS_WEBHOOK_URL"
         fi
