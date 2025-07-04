@@ -5,7 +5,6 @@ substitutions:
   _REGION: europe-west1
   _REPO: gitinfo-demo
   _SERVICE_ACCOUNT: 715553450089-compute@developer.gserviceaccount.com
-  _TEAMS_WEBHOOK_URL: https://teams.microsoft.com
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -139,7 +138,7 @@ steps:
     id: Notify
     entrypoint: 'sh'
     waitFor: ["Build", "Push", "Deploy"]
-    secretEnv: ['GITHUB_TOKEN']
+    secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL']
     args:
       - -c
       - |
@@ -163,7 +162,7 @@ steps:
               }]
             }
             EOF
-            )" "${_TEAMS_WEBHOOK_URL}"
+            )" "$TEAMS_WEBHOOK_URL"
         else
           COMMIT_SHA="$$SHORT_SHA"
           echo "Fetching commit info..."
@@ -206,5 +205,5 @@ steps:
               ]
             }
             EOF
-            )" "${_TEAMS_WEBHOOK_URL}"
+            )" "$TEAMS_WEBHOOK_URL"
         fi
