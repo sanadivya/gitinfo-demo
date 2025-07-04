@@ -150,7 +150,7 @@ steps:
           echo "❌ Failure detected. Sending failure message..."
           curl -X POST -H "Content-Type: application/json" \
           -d
-            {
+            '{
               "@type": "MessageCard",
               "@context": "http://schema.org/extensions",
               "summary": "Deployment Failure",
@@ -160,7 +160,7 @@ steps:
                 "activityTitle": "Failure Details",
                 "text": "- **Environment**: \"${_ENV}\"\n- **Project**: \"${_PROJECT_ID}\"\n- **Service**: \"${_SERVICE_NAME}\"\n- **Version**: \"$SHORT_SHA\""
               }]
-            } "$$TEAMS_WEBHOOK_URL"
+            }' "$$TEAMS_WEBHOOK_URL"
         else
           COMMIT_SHA="$$SHORT_SHA"
           echo "Fetching commit info..."
@@ -185,7 +185,7 @@ steps:
 
           curl -X POST -H "Content-Type: application/json" \
           -d 
-            {
+            '{
               "@type": "MessageCard",
               "@context": "http://schema.org/extensions",
               "summary": "Deployment Notification",
@@ -201,5 +201,5 @@ steps:
                   "text": "$${DETAILS}"
                 }
               ]
-            } "$$TEAMS_WEBHOOK_URL"
+            }' "$$TEAMS_WEBHOOK_URL"
         fi
