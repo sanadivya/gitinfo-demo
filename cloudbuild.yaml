@@ -149,7 +149,7 @@ steps:
         if [ -f /workspace/failure_marker ]; then
           echo "❌ Failure detected. Sending failure message..."
           curl -X POST -H "Content-Type: application/json" \
-          -d "$(cat <<EOF
+          -d
             {
               "@type": "MessageCard",
               "@context": "http://schema.org/extensions",
@@ -160,9 +160,7 @@ steps:
                 "activityTitle": "Failure Details",
                 "text": "- **Environment**: \"${_ENV}\"\n- **Project**: \"${_PROJECT_ID}\"\n- **Service**: \"${_SERVICE_NAME}\"\n- **Version**: \"$SHORT_SHA\""
               }]
-            }
-            EOF
-            )" "$$TEAMS_WEBHOOK_URL"
+            } "$$TEAMS_WEBHOOK_URL"
         else
           COMMIT_SHA="$$SHORT_SHA"
           echo "Fetching commit info..."
@@ -186,7 +184,7 @@ steps:
           fi
 
           curl -X POST -H "Content-Type: application/json" \
-          -d "$(cat <<EOF
+          -d 
             {
               "@type": "MessageCard",
               "@context": "http://schema.org/extensions",
@@ -203,7 +201,5 @@ steps:
                   "text": "$${DETAILS}"
                 }
               ]
-            }
-            EOF
-            )" "$$TEAMS_WEBHOOK_URL"
+            } "$$TEAMS_WEBHOOK_URL"
         fi
