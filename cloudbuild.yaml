@@ -162,7 +162,7 @@ steps:
               }]
             }
             EOF
-            )" "$TEAMS_WEBHOOK_URL"
+            )" "$$TEAMS_WEBHOOK_URL"
         else
           COMMIT_SHA="$$SHORT_SHA"
           echo "Fetching commit info..."
@@ -205,5 +205,5 @@ steps:
               ]
             }
             EOF
-            )" "$TEAMS_WEBHOOK_URL"
+            )" "$$TEAMS_WEBHOOK_URL"
         fi
