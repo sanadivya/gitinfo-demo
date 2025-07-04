@@ -184,7 +184,7 @@ steps:
           fi
            
           echo "$$DETAILS"
-          ESCAPED_DETAILS=$(printf '%s' "$DETAILS" | jq -R | jq -s -r 'join("\\n")')
+          ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
 
           curl -X POST -H "Content-Type: application/json" \
           -d '{
