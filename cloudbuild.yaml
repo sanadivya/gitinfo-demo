@@ -148,19 +148,13 @@ steps:
         echo "📣 Sending Teams notification..."
         if [ -f /workspace/failure_marker ]; then
           echo "❌ Failure detected. Sending failure message..."
+
           curl -X POST -H "Content-Type: application/json" \
-          -d '{
-              "@type": "MessageCard",
-              "@context": "http://schema.org/extensions",
-              "summary": "Deployment Failure",
-              "themeColor": "FF0000",
-              "title": "❌ Deployment failed for BE '${_ENV}' environment",
-              "sections": [{
-                "activityTitle": "Failure Details",
-                "text": "- **Environment**: \"${_ENV}\"\n- **Project**: \"${_PROJECT_ID}\"\n- **Service**: \"${_SERVICE_NAME}\"\n- **Version**: \"$SHORT_SHA\""
-              }]
-            }' "$$TEAMS_WEBHOOK_URL"
+          -d "{\"@type\": \"MessageCard\", \"@context\": \"http://schema.org/extensions\", \"summary\": \"Deployment Failure\", \"themeColor\": \"FF0000\", \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\", \"sections\": [{\"activityTitle\": \"Failure Details\", \"text\": \"- **Environment**: \\\"${_ENV}\\\"\\n- **Project**: \\\"${_PROJECT_ID}\\\"\\n- **Service**: \\\"${_SERVICE_NAME}\\\"\\n- **Version**: \\\"$SHORT_SHA\\\"\"}, {\"activityTitle\": \"Git Info\", \"text\": \"$${DETAILS}\"}]}" \
+          "$$TEAMS_WEBHOOK_URL"
+
         else
+        
           COMMIT_SHA=$(git rev-parse HEAD)
 
           echo "Fetching commit info..."
@@ -210,3 +204,18 @@ steps:
 #                 }
 #               ]
 #           }' "$$TEAMS_WEBHOOK_URL"
+
+
+
+# curl -X POST -H "Content-Type: application/json" \
+#           -d '{
+#               "@type": "MessageCard",
+#               "@context": "http://schema.org/extensions",
+#               "summary": "Deployment Failure",
+#               "themeColor": "FF0000",
+#               "title": "❌ Deployment failed for BE '${_ENV}' environment",
+#               "sections": [{
+#                 "activityTitle": "Failure Details",
+#                 "text": "- **Environment**: \"${_ENV}\"\n- **Project**: \"${_PROJECT_ID}\"\n- **Service**: \"${_SERVICE_NAME}\"\n- **Version**: \"$SHORT_SHA\""
+#               }]
+#             }' "$$TEAMS_WEBHOOK_URL"
