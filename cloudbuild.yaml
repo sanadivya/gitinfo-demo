@@ -11,11 +11,11 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 available_secrets:
-secretManager:
-  - versionName: projects/${_PROJECT_ID}/secrets/GITHUB_TOKEN/versions/latest
-    env: GITHUB_TOKEN
-  - versionName: projects/${_PROJECT_ID}/secrets/TEAMS_WEBHOOK_URL/versions/latest
-    env: TEAMS_WEBHOOK_URL
+  secretManager:
+    - versionName: projects/${_PROJECT_ID}/secrets/GITHUB_TOKEN/versions/latest
+      env: GITHUB_TOKEN
+    - versionName: projects/${_PROJECT_ID}/secrets/TEAMS_WEBHOOK_URL/versions/latest
+      env: TEAMS_WEBHOOK_URL
 
 steps:
   
