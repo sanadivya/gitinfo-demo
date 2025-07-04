@@ -182,6 +182,9 @@ steps:
           else
             DETAILS="\n- **Commit Message**: $${COMMIT_MESSAGE}\n- **Author**: $${COMMIT_AUTHOR}"
           fi
+           
+          echo "$$DETAILS"
+          ESCAPED_DETAILS=$(printf '%s' "$DETAILS" | jq -R | jq -s -r 'join("\\n")')
 
           curl -X POST -H "Content-Type: application/json" \
           -d '{
@@ -197,7 +200,7 @@ steps:
                 },
                 {
                   "activityTitle": "Git Info",
-                  "text": "$${DETAILS}"
+                  "text": "$${ESCAPED_DETAILS}"
                 }
               ]
           }' "$$TEAMS_WEBHOOK_URL"
