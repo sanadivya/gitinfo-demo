@@ -179,7 +179,7 @@ steps:
             PR_TITLE=$(echo "$$PR_DATA" | jq -r '.[0].title')
             PR_SOURCE=$(echo "$$PR_DATA" | jq -r '.[0].head.ref')
             PR_TARGET=$(echo "$$PR_DATA" | jq -r '.[0].base.ref')
-            DETAILS="\n- **PR Title**: $${PR_TITLE}\n- **PR Number**: #$${PR_NUMBER}\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}"
+            DETAILS="\n- **PR Title**: $${PR_TITLE}\n- **PR Number**: #$${PR_NUMBER}\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}\n- **PR Description**: $${PR_DESCRIPTION}"
           else
             DETAILS="\n- **Commit Message**: $${COMMIT_MESSAGE}\n- **Author**: $${COMMIT_AUTHOR}"
           fi
