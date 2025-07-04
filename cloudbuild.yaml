@@ -190,23 +190,3 @@ steps:
           -d "{\"@type\": \"MessageCard\", \"@context\": \"http://schema.org/extensions\", \"summary\": \"Deployment Notification\", \"themeColor\": \"00FF00\", \"title\": \"✅ New version deployed to ${_ENV} environment\", \"sections\": [{\"activityTitle\": \"Deployment Details\", \"text\": \"- **Environment**: \\\"${_ENV}\\\"\\n- **Project**: \\\"${_PROJECT_ID}\\\"\\n- **Service**: \\\"${_SERVICE_NAME}\\\"\\n- **Version**: \\\"$SHORT_SHA\\\"\"}, {\"activityTitle\": \"Git Info\", \"text\": \"$${DETAILS}\"}]}" \
           "$$TEAMS_WEBHOOK_URL"
         fi
-
-
-# curl -X POST -H "Content-Type: application/json" \
-#           -d '{
-#               "@type": "MessageCard",
-#               "@context": "http://schema.org/extensions",
-#               "summary": "Deployment Notification",
-#               "themeColor": "00FF00",
-#               "title": "✅ New version deployed to ${_ENV} environment",
-#               "sections": [
-#                 {
-#                   "activityTitle": "Deployment Details",
-#                   "text": "\n- **Environment**: `${_ENV}`\n- **Project**: `${_PROJECT_ID}`\n- **Service**: `${_SERVICE_NAME}`\n- **Version**: `$SHORT_SHA`"
-#                 },
-#                 {
-#                   "activityTitle": "Git Info",
-#                   "text": "$${ESCAPED_DETAILS}"
-#                 }
-#               ]
-#           }' "$$TEAMS_WEBHOOK_URL"
