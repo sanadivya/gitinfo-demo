@@ -142,8 +142,8 @@ steps:
     args:
       - -c
       - |
-        echo "📦 Installing curl git jq..."
-        apk add --no-cache curl jq
+        echo "📦 Installing curl jq..."
+        apk add --no-cache curl jq git
 
         echo "📣 Sending Teams notification..."
         if [ -f /workspace/failure_marker ]; then
