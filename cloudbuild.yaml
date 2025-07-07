@@ -175,9 +175,11 @@ steps:
             PR_DESCRIPTION=$(echo "$$PR_DATA" | jq -r '.[0].body')
             PR_AUTHOR=$(echo "$$PR_DATA" | jq -r '.[0].user.login')
             DETAILS="\n- **PR Title**: $${PR_TITLE}\n- **PR Number**: #$${PR_NUMBER}\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}\n- **PR Description**: $${PR_DESCRIPTION}\n- **PR Author**: $${PR_AUTHOR}"
+            ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
+
             GIT_INFO_SECTION="{
               \"activityTitle\": \"Git Info\",
-              \"text\": \"$${DETAILS}\"
+              \"text\": \"$${ESCAPED_DETAILS}\"
             },"
           else
             GIT_INFO_SECTION=""
