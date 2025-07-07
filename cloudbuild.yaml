@@ -181,6 +181,7 @@ steps:
             },"
           else
             GIT_INFO_SECTION=""
+            DETAILS=""
           fi
            
           echo "$$DETAILS"
@@ -191,7 +192,7 @@ steps:
               },
               $${GIT_INFO_SECTION} 
               {
-              \"activityTitle\": \"Git Info\",
+              \"activityTitle\": \"Status\",
               \"text\": \"$${DETAILS}\"}]}" \
           "$$TEAMS_WEBHOOK_URL"
         fi
