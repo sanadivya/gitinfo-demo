@@ -193,6 +193,6 @@ steps:
               $${GIT_INFO_SECTION} 
               {
               \"activityTitle\": \"Status\",
-              \"text\": \"$${DETAILS}\"}]}" \
+              \"text\": \"Deployment completed successfully.\"}]}" \
           "$$TEAMS_WEBHOOK_URL"
         fi
