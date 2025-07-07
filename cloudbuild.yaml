@@ -177,7 +177,7 @@ steps:
             DETAILS="\n- **PR Title**: $${PR_TITLE}\n- **PR Number**: #$${PR_NUMBER}\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}\n- **PR Description**: $${PR_DESCRIPTION}\n- **PR Author**: $${PR_AUTHOR}"
             GIT_INFO_SECTION="{
               \"activityTitle\": \"Git Info\",
-              \"text\": \"${ESCAPED_DETAILS}\"
+              \"text\": \"$${DETAILS}\"
             },"
           else
             GIT_INFO_SECTION=""
