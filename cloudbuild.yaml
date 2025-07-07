@@ -177,12 +177,7 @@ steps:
 
             PR_DESCRIPTION_FORMATTED=$(echo "$${PR_DESCRIPTION}" | sed 's/^/  /' | sed ':a;N;$!ba;s/\n/\\n/g')
 
-            PR_DESCRIPTION_ESCAPED=$(echo "$${PR_DESCRIPTION}" \
-              | sed 's/\\/\\\\/g' \
-              | sed 's/\*/\\*/g' \
-              | sed 's/_/\\_/g')
-
-            DETAILS="\n- **PR Title**: $${PR_TITLE}\\n- **PR Number**: #$${PR_NUMBER}\\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}\\n- **PR Description**: \\n$${PR_DESCRIPTION_ESCAPED}\\n- **PR Author**: $${PR_AUTHOR}"
+            DETAILS="\n- **PR Title**: $${PR_TITLE}\\n- **PR Number**: #$${PR_NUMBER}\\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}\\n- **PR Description**: \\n$${PR_DESCRIPTION_FORMATTED}\\n- **PR Author**: $${PR_AUTHOR}"
             ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
 
             GIT_INFO_SECTION="{
