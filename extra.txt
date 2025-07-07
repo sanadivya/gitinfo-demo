@@ -1,0 +1,2 @@
+DETAILS="\n- **Commit Message**: $${COMMIT_MESSAGE}\n- **Author**: $${COMMIT_AUTHOR}"
+ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
