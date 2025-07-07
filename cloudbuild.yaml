@@ -172,50 +172,16 @@ steps:
             PR_TITLE=$(echo "$$PR_DATA" | jq -r '.[0].title')
             PR_SOURCE=$(echo "$$PR_DATA" | jq -r '.[0].head.ref')
             PR_TARGET=$(echo "$$PR_DATA" | jq -r '.[0].base.ref')
-            DETAILS="\n- **PR Title**: $${PR_TITLE}\n- **PR Number**: #$${PR_NUMBER}\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}"
+            PR_DESCRIPTION=$(echo "$$PR_DATA" | jq -r '.[0].body')
+            PR_AUTHOR=$(echo "$$PR_DATA" | jq -r '.[0].user.login')
+            DETAILS="\n- **PR Title**: $${PR_TITLE}\n- **PR Number**: #$${PR_NUMBER}\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}\n- **PR Description**: $${PR_DESCRIPTION}\n- **PR Author**: $${PR_AUTHOR}"
           else
-            DETAILS="\n- **Commit Message**: $${COMMIT_MESSAGE}\n- **Author**: $${COMMIT_AUTHOR}"
+            DETAILS=""
           fi
            
           echo "$$DETAILS"
-          ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
 
           curl -X POST -H "Content-Type: application/json" \
           -d "{\"@type\": \"MessageCard\", \"@context\": \"http://schema.org/extensions\", \"summary\": \"Deployment Notification\", \"themeColor\": \"00FF00\", \"title\": \"✅ New version deployed to ${_ENV} environment\", \"sections\": [{\"activityTitle\": \"Deployment Details\", \"text\": \"- **Environment**: \\\"${_ENV}\\\"\\n- **Project**: \\\"${_PROJECT_ID}\\\"\\n- **Service**: \\\"${_SERVICE_NAME}\\\"\\n- **Version**: \\\"$SHORT_SHA\\\"\"}, {\"activityTitle\": \"Git Info\", \"text\": \"$${DETAILS}\"}]}" \
           "$$TEAMS_WEBHOOK_URL"
         fi
-
-
-# curl -X POST -H "Content-Type: application/json" \
-#           -d '{
-#               "@type": "MessageCard",
-#               "@context": "http://schema.org/extensions",
-#               "summary": "Deployment Notification",
-#               "themeColor": "00FF00",
-#               "title": "✅ New version deployed to ${_ENV} environment",
-#               "sections": [
-#                 {
-#                   "activityTitle": "Deployment Details",
-#                   "text": "\n- **Environment**: `${_ENV}`\n- **Project**: `${_PROJECT_ID}`\n- **Service**: `${_SERVICE_NAME}`\n- **Version**: `$SHORT_SHA`"
-#                 },
-#                 {
-#                   "activityTitle": "Git Info",
-#                   "text": "$${ESCAPED_DETAILS}"
-#                 }
-#               ]
-#           }' "$$TEAMS_WEBHOOK_URL"
-
-
-
-# curl -X POST -H "Content-Type: application/json" \
-#           -d '{
-#               "@type": "MessageCard",
-#               "@context": "http://schema.org/extensions",
-#               "summary": "Deployment Failure",
-#               "themeColor": "FF0000",
-#               "title": "❌ Deployment failed for BE '${_ENV}' environment",
-#               "sections": [{
-#                 "activityTitle": "Failure Details",
-#                 "text": "- **Environment**: \"${_ENV}\"\n- **Project**: \"${_PROJECT_ID}\"\n- **Service**: \"${_SERVICE_NAME}\"\n- **Version**: \"$SHORT_SHA\""
-#               }]
-#             }' "$$TEAMS_WEBHOOK_URL"
