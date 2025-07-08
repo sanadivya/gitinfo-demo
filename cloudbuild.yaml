@@ -28,6 +28,8 @@ steps:
         if ! docker build -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE_NAME}:$SHORT_SHA" .; then
           echo "Build failed" > /workspace/failure_marker
         fi
+        echo "💣 Intentional failure to test Teams notification"
+        exit 1
 
   - id: Push
     name: "gcr.io/cloud-builders/docker"
