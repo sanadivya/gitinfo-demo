@@ -116,11 +116,19 @@ steps:
 
           curl -X POST -H "Content-Type: application/json" \
           -d "{
-                \"@type\": \"MessageCard\", \"@context\": \"http://schema.org/extensions\", \"summary\": \"Deployment Notification\", \"themeColor\": \"00FF00\", \"title\": \"✅ New version deployed to ${_ENV} environment\", \"sections\": [{\"activityTitle\": \"Deployment Details\", \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"
-              },
-              $${GIT_INFO_SECTION} 
-              {
-              \"activityTitle\": \"Status\",
-              \"text\": \"Deployment completed successfully.\"}]}" \
-          "$$TEAMS_WEBHOOK_URL"
+                \"@type\": \"MessageCard\",
+                \"@context\": \"http://schema.org/extensions\",
+                \"summary\": \"Deployment Notification\",
+                \"themeColor\": \"00FF00\",
+                \"title\": \"✅ New version deployed to ${_ENV} environment\",
+                \"sections\": [
+                  {
+                    \"activityTitle\": \"Deployment Details\",
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"
+                  },
+                  $${GIT_INFO_SECTION} 
+                  {
+                    \"activityTitle\": \"Status\",
+                    \"text\": \"Deployment completed successfully.\"}]}" \
+                 "$$TEAMS_WEBHOOK_URL"
         fi
