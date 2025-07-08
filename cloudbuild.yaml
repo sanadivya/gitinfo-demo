@@ -72,7 +72,22 @@ steps:
           echo "❌ Failure detected. Sending failure message..."
 
           curl -X POST -H "Content-Type: application/json" \
-          -d "{\"@type\": \"MessageCard\", \"@context\": \"http://schema.org/extensions\", \"summary\": \"Deployment Failure\", \"themeColor\": \"FF0000\", \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\", \"sections\": [{\"activityTitle\": \"Failure Details\", \"text\": \"- **Environment**: \\\"${_ENV}\\\"\\n- **Project**: \\\"${_PROJECT_ID}\\\"\\n- **Service**: \\\"${_SERVICE_NAME}\\\"\\n- **Version**: \\\"$SHORT_SHA\\\"\"}, {\"activityTitle\": \"Git Info\", \"text\": \"$${DETAILS}\"}]}" \
+          -d "{
+                \"@type\": \"MessageCard\",
+                \"@context\": \"http://schema.org/extensions\",
+                \"summary\": \"Deployment Failure\", 
+                \"themeColor\": \"FF0000\",
+                \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\",
+                \"sections\": [
+                  {
+                    \"activityTitle\": \"Failure Details\",
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"}, 
+                    {
+                      \"activityTitle\": \"Git Info\", 
+                      \"text\": \"$${DETAILS}\"
+                    }
+                ]
+              }" \
           "$$TEAMS_WEBHOOK_URL"
 
         else
@@ -128,6 +143,9 @@ steps:
                   $${GIT_INFO_SECTION} 
                   {
                     \"activityTitle\": \"Status\",
-                    \"text\": \"Deployment completed successfully.\"}]}" \
-                 "$$TEAMS_WEBHOOK_URL"
+                    \"text\": \"Deployment completed successfully.\"
+                  }
+                ]
+              }" \
+            "$$TEAMS_WEBHOOK_URL"
         fi
