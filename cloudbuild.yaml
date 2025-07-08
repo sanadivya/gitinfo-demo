@@ -25,8 +25,9 @@ steps:
       - -c
       - |
         echo "🔧 Building image..."
-        echo "💣 Simulating failure by writing marker"
-        echo "Build failed (simulated)" > /workspace/failure_marker
+        if ! docker build -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE_NAME}:$SHORT_SHA" .; then
+          echo "Build failed" > /workspace/failure_marker
+        fi
 
   - id: Push
     name: "gcr.io/cloud-builders/docker"
@@ -83,8 +84,8 @@ steps:
                     \"activityTitle\": \"Failure Details\",
                     \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"}, 
                     {
-                      \"activityTitle\": \"Git Info\", 
-                      \"text\": \"$${DETAILS}\"
+                      \"activityTitle\": \"Status\", 
+                      \"text\": \"Deployment Failed.\"
                     }
                 ]
               }" \
