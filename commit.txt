@@ -73,22 +73,7 @@ steps:
           echo "❌ Failure detected. Sending failure message..."
 
           curl -X POST -H "Content-Type: application/json" \
-          -d "{
-                \"@type\": \"MessageCard\",
-                \"@context\": \"http://schema.org/extensions\",
-                \"summary\": \"Deployment Failure\", 
-                \"themeColor\": \"FF0000\",
-                \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\",
-                \"sections\": [
-                  {
-                    \"activityTitle\": \"Failure Details\",
-                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"}, 
-                    {
-                      \"activityTitle\": \"Status\", 
-                      \"text\": \"Deployment Failed.\"
-                    }
-                ]
-              }" \
+          -d "{\"@type\": \"MessageCard\", \"@context\": \"http://schema.org/extensions\", \"summary\": \"Deployment Failure\", \"themeColor\": \"FF0000\", \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\", \"sections\": [{\"activityTitle\": \"Failure Details\", \"text\": \"- **Environment**: \\\"${_ENV}\\\"\\n- **Project**: \\\"${_PROJECT_ID}\\\"\\n- **Service**: \\\"${_SERVICE_NAME}\\\"\\n- **Version**: \\\"$SHORT_SHA\\\"\"}, {\"activityTitle\": \"Git Info\", \"text\": \"$${DETAILS}\"}]}" \
           "$$TEAMS_WEBHOOK_URL"
 
         else
@@ -119,7 +104,7 @@ steps:
             ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
 
             GIT_INFO_SECTION="{
-              \"activityTitle\": \"PR details\",
+              \"activityTitle\": \"Git Info\",
               \"text\": \"$${ESCAPED_DETAILS}\"
             },"
           else
@@ -131,22 +116,11 @@ steps:
 
           curl -X POST -H "Content-Type: application/json" \
           -d "{
-                \"@type\": \"MessageCard\",
-                \"@context\": \"http://schema.org/extensions\",
-                \"summary\": \"Deployment Notification\",
-                \"themeColor\": \"00FF00\",
-                \"title\": \"✅ New version deployed to ${_ENV} environment\",
-                \"sections\": [
-                  {
-                    \"activityTitle\": \"Deployment Details\",
-                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"
-                  },
-                  $${GIT_INFO_SECTION} 
-                  {
-                    \"activityTitle\": \"Status\",
-                    \"text\": \"Deployment completed successfully.\"
-                  }
-                ]
-              }" \
-            "$$TEAMS_WEBHOOK_URL"
+                \"@type\": \"MessageCard\", \"@context\": \"http://schema.org/extensions\", \"summary\": \"Deployment Notification\", \"themeColor\": \"00FF00\", \"title\": \"✅ New version deployed to ${_ENV} environment\", \"sections\": [{\"activityTitle\": \"Deployment Details\", \"text\": \"- **Environment**: \\\"${_ENV}\\\"\\n- **Project**: \\\"${_PROJECT_ID}\\\"\\n- **Service**: \\\"${_SERVICE_NAME}\\\"\\n- **Version**: \\\"$SHORT_SHA\\\"\"
+              },
+              $${GIT_INFO_SECTION} 
+              {
+              \"activityTitle\": \"Status\",
+              \"text\": \"Deployment completed successfully.\"}]}" \
+          "$$TEAMS_WEBHOOK_URL"
         fi
