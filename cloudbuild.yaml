@@ -119,7 +119,7 @@ steps:
             ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
 
             GIT_INFO_SECTION="{
-              \"activityTitle\": \"Git Info\",
+              \"activityTitle\": \"PR details\",
               \"text\": \"$${ESCAPED_DETAILS}\"
             },"
           else
