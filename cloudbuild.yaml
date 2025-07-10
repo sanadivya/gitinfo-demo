@@ -57,9 +57,9 @@ steps:
           echo "Deploy failed" > /workspace/failure_marker
         fi
 
-  - name: 'alpine'
+  - name: "ubuntu"
     id: Notify
-    entrypoint: 'sh'
+    entrypoint: "bash"
     waitFor: ["Build", "Push", "Deploy"]
     secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL']
     args:
