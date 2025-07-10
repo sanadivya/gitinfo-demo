@@ -57,106 +57,11 @@ steps:
           echo "Deploy failed" > /workspace/failure_marker
         fi
 
-  # - name: "ubuntu"
-  #   id: Notify
-  #   entrypoint: "bash"
-  #   waitFor: ["Build", "Push", "Deploy"]
-  #   secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL']
-  #   args:
-  #     - -c
-  #     - |
-  #       echo "📦 Installing curl jq..."
-  #       apt-get update && apt-get install -y curl jq git
-
-  #       echo "📣 Sending Teams notification..."
-  #       if [ -f /workspace/failure_marker ]; then
-  #         echo "❌ Failure detected. Sending failure message..."
-
-  #         curl -X POST -H "Content-Type: application/json" \
-  #         -d "{
-  #               \"@type\": \"MessageCard\",
-  #               \"@context\": \"http://schema.org/extensions\",
-  #               \"summary\": \"Deployment Failure\", 
-  #               \"themeColor\": \"FF0000\",
-  #               \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\",
-  #               \"sections\": [
-  #                 {
-  #                   \"activityTitle\": \"Failure Details\",
-  #                   \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"}, 
-  #                   {
-  #                     \"activityTitle\": \"Status\", 
-  #                     \"text\": \"Deployment Failed.\"
-  #                   }
-  #               ]
-  #             }" \
-  #         "$$TEAMS_WEBHOOK_URL"
-
-  #       else
-        
-  #         COMMIT_SHA=$(git rev-parse HEAD)
-
-  #         echo "Fetching commit info..."
-  #         COMMIT_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA"
-  #         COMMIT_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" "$$COMMIT_API")
-  #         COMMIT_MESSAGE=$(echo "$$COMMIT_DATA" | jq -r '.commit.message')
-  #         COMMIT_AUTHOR=$(echo "$$COMMIT_DATA" | jq -r '.commit.author.name')
-
-  #         PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
-  #         PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
-  #         PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
-
-  #         if [ "$$PR_COUNT" -gt 0 ]; then
-  #           PR_NUMBER=$(echo "$$PR_DATA" | jq -r '.[0].number')
-  #           PR_TITLE=$(echo "$$PR_DATA" | jq -r '.[0].title')
-  #           PR_SOURCE=$(echo "$$PR_DATA" | jq -r '.[0].head.ref')
-  #           PR_TARGET=$(echo "$$PR_DATA" | jq -r '.[0].base.ref')
-  #           PR_DESCRIPTION=$(echo "$$PR_DATA" | jq -r '.[0].body')
-  #           PR_AUTHOR=$(echo "$$PR_DATA" | jq -r '.[0].user.login')
-
-  #           PR_DESCRIPTION_FORMATTED=$(echo "$${PR_DESCRIPTION}" | sed 's/^/  /' | sed ':a;N;$!ba;s/\n/\\n/g')
-
-  #           DETAILS="\n- **PR Title**: $${PR_TITLE}\\n- **PR Number**: #$${PR_NUMBER}\\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}\\n- **PR Description**: \\n$${PR_DESCRIPTION_FORMATTED}\\n- **PR Author**: $${PR_AUTHOR}"
-  #           ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
-
-  #           GIT_INFO_SECTION="{
-  #             \"activityTitle\": \"PR Details\",
-  #             \"text\": \"$${ESCAPED_DETAILS}\"
-  #           },"
-            
-  #         else
-  #           GIT_INFO_SECTION=""
-  #           DETAILS=""
-  #         fi
-           
-  #         echo "$$DETAILS"
-
-  #         curl -X POST -H "Content-Type: application/json" \
-  #         -d "{
-  #               \"@type\": \"MessageCard\",
-  #               \"@context\": \"http://schema.org/extensions\",
-  #               \"summary\": \"Deployment Notification\",
-  #               \"themeColor\": \"00FF00\",
-  #               \"title\": \"✅ New version deployed to ${_ENV} environment\",
-  #               \"sections\": [
-  #                 {
-  #                   \"activityTitle\": \"Deployment Details\",
-  #                   \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"
-  #                 },
-  #                 $${GIT_INFO_SECTION} 
-  #                 {
-  #                   \"activityTitle\": \"Status\",
-  #                   \"text\": \"Deployment completed successfully.\"
-  #                 }
-  #               ]
-  #             }" \
-  #           "$$TEAMS_WEBHOOK_URL"
-  #       fi
   - name: "ubuntu"
     id: Notify
     entrypoint: "bash"
     waitFor: ["Build", "Push", "Deploy"]
-    secretEnv:
-      ["GITHUB_TOKEN", "TEAMS_WEBHOOK_URL", "TEAMS_WEBHOOK_URL_FAILURE"]
+    secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL']
     args:
       - -c
       - |
@@ -168,85 +73,181 @@ steps:
           echo "❌ Failure detected. Sending failure message..."
 
           curl -X POST -H "Content-Type: application/json" \
-            -d "$(cat <<EOF
-        {
-          "@type": "MessageCard",
-          "@context": "http://schema.org/extensions",
-          "summary": "Deployment Failure",
-          "themeColor": "FF0000",
-          "title": "❌ Deployment failed for BE '${_ENV}' environment",
-          "sections": [
-            {
-              "activityTitle": "Failure Details",
-              "text": "- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: ${SHORT_SHA}"
-            },
-            {
-              "activityTitle": "Status",
-              "text": "Deployment Failed."
-            }
-          ]
-        }
-        EOF
-                  )" "$$TEAMS_WEBHOOK_URL_FAILURE"
+          -d "{
+                \"@type\": \"MessageCard\",
+                \"@context\": \"http://schema.org/extensions\",
+                \"summary\": \"Deployment Failure\", 
+                \"themeColor\": \"FF0000\",
+                \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\",
+                \"sections\": [
+                  {
+                    \"activityTitle\": \"Failure Details\",
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"}, 
+                    {
+                      \"activityTitle\": \"Status\", 
+                      \"text\": \"Deployment Failed.\"
+                    }
+                ]
+              }" \
+          "$$TEAMS_WEBHOOK_URL"
 
-              else
-                COMMIT_SHA=$(git rev-parse HEAD)
+        else
+        
+          COMMIT_SHA=$(git rev-parse HEAD)
 
-                echo "Fetching commit info..."
-                COMMIT_API="https://api.github.com/repos/MSN-EPIC/epic-be/commits/${COMMIT_SHA}"
-                COMMIT_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "$COMMIT_API")
-                COMMIT_MESSAGE=$(echo "$COMMIT_DATA" | jq -r '.commit.message')
-                COMMIT_AUTHOR=$(echo "$COMMIT_DATA" | jq -r '.commit.author.name')
+          echo "Fetching commit info..."
+          COMMIT_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA"
+          COMMIT_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" "$$COMMIT_API")
+          COMMIT_MESSAGE=$(echo "$$COMMIT_DATA" | jq -r '.commit.message')
+          COMMIT_AUTHOR=$(echo "$$COMMIT_DATA" | jq -r '.commit.author.name')
 
-                PR_API="https://api.github.com/repos/MSN-EPIC/epic-be/commits/${COMMIT_SHA}/pulls"
-                PR_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$PR_API")
-                PR_COUNT=$(echo "$PR_DATA" | jq 'length')
+          PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
+          PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
+          PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
 
-                if [ "$PR_COUNT" -gt 0 ]; then
-                  PR_NUMBER=$(echo "$PR_DATA" | jq -r '.[0].number')
-                  PR_TITLE=$(echo "$PR_DATA" | jq -r '.[0].title')
-                  PR_SOURCE=$(echo "$PR_DATA" | jq -r '.[0].head.ref')
-                  PR_TARGET=$(echo "$PR_DATA" | jq -r '.[0].base.ref')
-                  PR_DESCRIPTION=$(echo "$PR_DATA" | jq -r '.[0].body')
-                  PR_AUTHOR=$(echo "$PR_DATA" | jq -r '.[0].user.login')
+          if [ "$$PR_COUNT" -gt 0 ]; then
+            PR_NUMBER=$(echo "$$PR_DATA" | jq -r '.[0].number')
+            PR_TITLE=$(echo "$$PR_DATA" | jq -r '.[0].title')
+            PR_SOURCE=$(echo "$$PR_DATA" | jq -r '.[0].head.ref')
+            PR_TARGET=$(echo "$$PR_DATA" | jq -r '.[0].base.ref')
+            PR_DESCRIPTION=$(echo "$$PR_DATA" | jq -r '.[0].body')
+            PR_AUTHOR=$(echo "$$PR_DATA" | jq -r '.[0].user.login')
 
-                  PR_DESCRIPTION_FORMATTED=$(echo "$PR_DESCRIPTION" | sed 's/^/  /' | sed ':a;N;$!ba;s/\n/\\n/g')
+            PR_DESCRIPTION_FORMATTED=$(echo "$${PR_DESCRIPTION}" | sed 's/^/  /' | sed ':a;N;$!ba;s/\n/\\n/g')
 
-                  DETAILS="\n- **PR Title**: ${PR_TITLE}\\n- **PR Number**: #${PR_NUMBER}\\n- **Branch**: ${PR_SOURCE} → ${PR_TARGET}\\n- **PR Description**:\\n${PR_DESCRIPTION_FORMATTED}\\n- **PR Author**: ${PR_AUTHOR}"
+            DETAILS="\n- **PR Title**: $${PR_TITLE}\\n- **PR Number**: #$${PR_NUMBER}\\n- **PR Description**: \\n$${PR_DESCRIPTION_FORMATTED}\\n- **PR Author**: $${PR_AUTHOR}"
+            ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
 
-                  GIT_INFO_SECTION=$(cat <<EOF
-        {
-          "activityTitle": "PR Details",
-          "text": "${DETAILS}"
-        },
-        EOF
-                  )
-                else
-                  GIT_INFO_SECTION=""
-                fi
+            GIT_INFO_SECTION="{
+              \"activityTitle\": \"PR Details\",
+              \"text\": \"$${ESCAPED_DETAILS}\"
+            },"
+            
+          else
+            GIT_INFO_SECTION=""
+            DETAILS=""
+          fi
+           
+          echo "$$DETAILS"
 
-                echo -e "${DETAILS}"
+          curl -X POST -H "Content-Type: application/json" \
+          -d "{
+                \"@type\": \"MessageCard\",
+                \"@context\": \"http://schema.org/extensions\",
+                \"summary\": \"Deployment Notification\",
+                \"themeColor\": \"00FF00\",
+                \"title\": \"✅ New version deployed to ${_ENV} environment\",
+                \"sections\": [
+                  {
+                    \"activityTitle\": \"Deployment Details\",
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"
+                  },
+                  $${GIT_INFO_SECTION} 
+                  {
+                    \"activityTitle\": \"Status\",
+                    \"text\": \"Deployment completed successfully.\"
+                  }
+                ]
+              }" \
+            "$$TEAMS_WEBHOOK_URL"
+        fi
 
-                curl -X POST -H "Content-Type: application/json" \
-                  -d "$(cat <<EOF
-        {
-          "@type": "MessageCard",
-          "@context": "http://schema.org/extensions",
-          "summary": "Deployment Notification",
-          "themeColor": "00FF00",
-          "title": "✅ New version deployed to BE ${_ENV} environment",
-          "sections": [
-            {
-              "activityTitle": "Deployment Details",
-              "text": "- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: ${SHORT_SHA}"
-            },
-            ${GIT_INFO_SECTION}
-            {
-              "activityTitle": "Status",
-              "text": "Deployment completed successfully."
-            }
-          ]
-        }
-        EOF
-                  )" "$$TEAMS_WEBHOOK_URL"
-              fi
+  # - name: "ubuntu"
+  #   id: Notify
+  #   entrypoint: "bash"
+  #   waitFor: ["Build", "Push", "Deploy"]
+  #   secretEnv:
+  #     ["GITHUB_TOKEN", "TEAMS_WEBHOOK_URL", "TEAMS_WEBHOOK_URL_FAILURE"]
+  #   args:
+  #     - -c
+  #     - |
+  #       echo "📦 Installing curl jq..."
+  #       apt-get update && apt-get install -y curl jq git
+
+  #       echo "📣 Sending Teams notification..."
+  #       if [ -f /workspace/failure_marker ]; then
+  #         echo "❌ Failure detected. Sending failure message..."
+
+  #         curl -X POST -H "Content-Type: application/json" \
+  #           -d "$(cat <<EOF
+  #       {
+  #         "@type": "MessageCard",
+  #         "@context": "http://schema.org/extensions",
+  #         "summary": "Deployment Failure",
+  #         "themeColor": "FF0000",
+  #         "title": "❌ Deployment failed for BE '${_ENV}' environment",
+  #         "sections": [
+  #           {
+  #             "activityTitle": "Failure Details",
+  #             "text": "- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: ${SHORT_SHA}"
+  #           },
+  #           {
+  #             "activityTitle": "Status",
+  #             "text": "Deployment Failed."
+  #           }
+  #         ]
+  #       }
+  #       EOF
+  #                 )" "$$TEAMS_WEBHOOK_URL_FAILURE"
+
+  #             else
+  #               COMMIT_SHA=$(git rev-parse HEAD)
+
+  #               echo "Fetching commit info..."
+  #               COMMIT_API="https://api.github.com/repos/MSN-EPIC/epic-be/commits/${COMMIT_SHA}"
+  #               COMMIT_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" "$$COMMIT_API")
+  #               COMMIT_MESSAGE=$(echo "$$COMMIT_DATA" | jq -r '.commit.message')
+  #               COMMIT_AUTHOR=$(echo "$$COMMIT_DATA" | jq -r '.commit.author.name')
+
+  #               PR_API="https://api.github.com/repos/MSN-EPIC/epic-be/commits/$${COMMIT_SHA}/pulls"
+  #               PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
+  #               PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
+
+  #               if [ "$$PR_COUNT" -gt 0 ]; then
+  #                 PR_NUMBER=$(echo "$$PR_DATA" | jq -r '.[0].number')
+  #                 PR_TITLE=$(echo "$$PR_DATA" | jq -r '.[0].title')
+  #                 PR_SOURCE=$(echo "$$PR_DATA" | jq -r '.[0].head.ref')
+  #                 PR_TARGET=$(echo "$$PR_DATA" | jq -r '.[0].base.ref')
+  #                 PR_DESCRIPTION=$(echo "$$PR_DATA" | jq -r '.[0].body')
+  #                 PR_AUTHOR=$(echo "$$PR_DATA" | jq -r '.[0].user.login')
+
+  #                 PR_DESCRIPTION_FORMATTED=$(echo "$PR_DESCRIPTION" | sed 's/^/  /' | sed ':a;N;$!ba;s/\n/\\n/g')
+
+  #                 DETAILS="\n- **PR Title**: $${PR_TITLE}\\n- **PR Number**: #$${PR_NUMBER}\\n- **Branch**: $${PR_SOURCE} → $${PR_TARGET}\\n- **PR Description**:\\n$${PR_DESCRIPTION_FORMATTED}\\n- **PR Author**: $${PR_AUTHOR}"
+
+  #                 GIT_INFO_SECTION=$(cat <<EOF
+  #       {
+  #         "activityTitle": "PR Details",
+  #         "text": "$${DETAILS}"
+  #       },
+  #       EOF
+  #                 )
+  #               else
+  #                 GIT_INFO_SECTION=""
+  #               fi
+
+  #               echo -e "$${DETAILS}"
+
+  #               curl -X POST -H "Content-Type: application/json" \
+  #                 -d "$(cat <<EOF
+  #       {
+  #         "@type": "MessageCard",
+  #         "@context": "http://schema.org/extensions",
+  #         "summary": "Deployment Notification",
+  #         "themeColor": "00FF00",
+  #         "title": "✅ New version deployed to BE ${_ENV} environment",
+  #         "sections": [
+  #           {
+  #             "activityTitle": "Deployment Details",
+  #             "text": "- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: ${SHORT_SHA}"
+  #           },
+  #           $${GIT_INFO_SECTION}
+  #           {
+  #             "activityTitle": "Status",
+  #             "text": "Deployment completed successfully."
+  #           }
+  #         ]
+  #       }
+  #       EOF
+  #                 )" "$$TEAMS_WEBHOOK_URL"
+  #             fi
