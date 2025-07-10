@@ -187,7 +187,7 @@ steps:
           ]
         }
         EOF
-                  )" "$TEAMS_WEBHOOK_URL_FAILURE"
+                  )" "$$TEAMS_WEBHOOK_URL_FAILURE"
 
               else
                 COMMIT_SHA=$(git rev-parse HEAD)
@@ -248,5 +248,5 @@ steps:
           ]
         }
         EOF
-                  )" "$TEAMS_WEBHOOK_URL"
+                  )" "$$TEAMS_WEBHOOK_URL"
               fi
