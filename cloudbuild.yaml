@@ -120,7 +120,7 @@ steps:
               "https://api.github.com/users/$${PR_AUTHOR_LOGIN}" | jq -r '.name')
 
             if [ "$$PR_AUTHOR_NAME" = "null" ] || [ -z "$$PR_AUTHOR_NAME" ]; then
-              PR_AUTHOR_NAME="@$${PR_AUTHOR_LOGIN}"
+              PR_AUTHOR_NAME="$${PR_AUTHOR_LOGIN}"
             fi
 
             PR_DESCRIPTION_FORMATTED=$(echo "$${PR_DESCRIPTION}" | sed 's/^/  /' | sed ':a;N;$!ba;s/\n/\\n/g')
