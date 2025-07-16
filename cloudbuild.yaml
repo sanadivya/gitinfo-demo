@@ -142,14 +142,21 @@ steps:
             DETAILS=""
           fi
            
-          echo "$$DETAILS"
+          if [ "$_ENV" = "dev" ]; then
+            THEME_COLOR="00FF00"  # Green
+          elif [ "$_ENV" = "staging" ]; then
+            THEME_COLOR="FFA500"  # Orange
+          elif [ "$_ENV" = "prod" ]; then
+            THEME_COLOR="FF0000"  # Red
+          fi
+
 
           curl -X POST -H "Content-Type: application/json" \
           -d "{
                 \"@type\": \"MessageCard\",
                 \"@context\": \"http://schema.org/extensions\",
                 \"summary\": \"Deployment Notification\",
-                \"themeColor\": \"00FF00\",
+                \"themeColor\": \"$THEME_COLOR\",
                 \"title\": \"✅ New version deployed to ${_ENV} environment\",
                 \"sections\": [
                   {
