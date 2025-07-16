@@ -114,6 +114,10 @@ steps:
             PR_TARGET=$(echo "$$PR_DATA" | jq -r '.[0].base.ref')
             PR_DESCRIPTION=$(echo "$$PR_DATA" | jq -r '.[0].body')
 
+            if [ "$$PR_DESCRIPTION" = "null" ] || [ -z "$$PR_DESCRIPTION" ]; then
+              PR_DESCRIPTION="-"
+            fi
+
             PR_AUTHOR_LOGIN=$(echo "$$PR_DATA" | jq -r '.[0].user.login')
 
             PR_AUTHOR_NAME=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
