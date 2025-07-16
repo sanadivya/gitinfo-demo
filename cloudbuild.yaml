@@ -156,7 +156,7 @@ steps:
                 \"@type\": \"MessageCard\",
                 \"@context\": \"http://schema.org/extensions\",
                 \"summary\": \"Deployment Notification\",
-                \"themeColor\": \"$THEME_COLOR\",
+                \"themeColor\": \"$$THEME_COLOR\",
                 \"title\": \"✅ New version deployed to ${_ENV} environment\",
                 \"sections\": [
                   {
