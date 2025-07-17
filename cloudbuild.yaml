@@ -66,7 +66,7 @@ steps:
   - name: "ubuntu"
     id: Notify
     entrypoint: "bash"
-    waitFor: ["-"]
+    waitFor: ["Build", "Push", "Deploy"]
     allowFailure: true
     secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
     args:
@@ -78,8 +78,8 @@ steps:
         echo "📦 Installing curl jq..."
         apt-get update && apt-get install -y curl jq git
 
-        echo "📂 Listing /workspace contents:"
-        ls -la /workspace
+        echo "📂 Listing /workspace/failure_marker contents:"
+        ls -la /workspace/failure_marker
 
         FAILED=false
         if [ "$$BUILD_STATUS" = "FAILURE" ]; then
