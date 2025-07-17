@@ -64,6 +64,7 @@ steps:
     id: Notify
     entrypoint: "bash"
     waitFor: ["Build", "Push", "Deploy"]
+    allowFailure: true
     secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
     args:
       - -c
