@@ -80,13 +80,8 @@ steps:
         echo "📂 Listing /workspace/failure_marker contents:"
         ls -la /workspace/failure_marker
 
-        FAILED=false
-        if [ "$$BUILD_STATUS" = "FAILURE" ]; then
-          FAILED=true
-        fi
-
         echo "📣 Sending Teams notification..."
-        if $$FAILED; then
+        if [ -f /workspace/failure_marker ]; then
           echo "❌ Failure detected. Sending failure message..."
 
           curl -X POST -H "Content-Type: application/json" \
@@ -106,8 +101,8 @@ steps:
                     }
                 ]
               }" \
-          "$$TEAMS_WEBHOOK_FAILURE_URL"
-
+            "$$TEAMS_WEBHOOK_FAILURE_URL"
+            
         else
         
           COMMIT_SHA=$(git rev-parse HEAD)
