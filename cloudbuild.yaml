@@ -21,6 +21,7 @@ available_secrets:
 steps:
   
   - id: Build
+    allowFailure: true
     name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
     args:
@@ -32,6 +33,7 @@ steps:
         fi
 
   - id: Push
+    allowFailure: true
     name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
     args:
@@ -43,6 +45,7 @@ steps:
         exit 1
 
   - id: Deploy
+    allowFailure: true
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "bash"
     args:
@@ -78,8 +81,13 @@ steps:
         echo "📂 Listing /workspace contents:"
         ls -la /workspace
 
+        FAILED=false
+        if [ "$$BUILD_STATUS" = "FAILURE" ]; then
+          FAILED=true
+        fi
+
         echo "📣 Sending Teams notification..."
-        if [ -f /workspace/failure_marker ]; then
+        if $$FAILED; then
           echo "❌ Failure detected. Sending failure message..."
 
           curl -X POST -H "Content-Type: application/json" \
@@ -99,7 +107,7 @@ steps:
                     }
                 ]
               }" \
-          https://pakompetens.webhook.office.com/webhookb2/3b361490-df1e-4317-91e4-c3aec626287f@fdb820d5-bcd4-43fc-ac72-c1638a72ae9c/IncomingWebhook/7b35af61f0894c98858cf9ca8c1798a1/da953398-22b5-4e5d-b7c2-1ae89b32899e/V2jlw6vCNYCARmYbPLEiOUmFYN51o-BFfxTN-4PELnXdM1
+          "$$TEAMS_WEBHOOK_FAILURE_URL"
 
         else
         
