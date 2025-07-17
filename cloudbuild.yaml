@@ -63,12 +63,15 @@ steps:
   - name: "ubuntu"
     id: Notify
     entrypoint: "bash"
-    waitFor: ["Build", "Push", "Deploy"]
+    waitFor: ["-"]
     allowFailure: true
     secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
     args:
       - -c
       - |
+        echo "🔔 Notify step started"
+        echo "🔍 Checking for failure marker..."
+        
         echo "📦 Installing curl jq..."
         apt-get update && apt-get install -y curl jq git
 
