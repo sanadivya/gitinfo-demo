@@ -45,7 +45,6 @@ steps:
         exit 1
 
   - id: Deploy
-    allowFailure: true
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "bash"
     args:
@@ -122,8 +121,6 @@ steps:
           PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
           PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
           PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
-
-          echo "$$PR_DATA"
 
           if [ "$$PR_COUNT" -gt 0 ]; then
             PR_NUMBER=$(echo "$$PR_DATA" | jq -r '.[0].number')
