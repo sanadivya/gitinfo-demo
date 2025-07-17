@@ -75,6 +75,9 @@ steps:
         echo "📦 Installing curl jq..."
         apt-get update && apt-get install -y curl jq git
 
+        echo "📂 Listing /workspace contents:"
+        ls -la /workspace
+
         echo "📣 Sending Teams notification..."
         if [ -f /workspace/failure_marker ]; then
           echo "❌ Failure detected. Sending failure message..."
