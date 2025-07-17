@@ -150,7 +150,6 @@ steps:
             THEME_COLOR="FF0000"  # Red
           fi
 
-
           curl -X POST -H "Content-Type: application/json" \
           -d "{
                 \"@type\": \"MessageCard\",
