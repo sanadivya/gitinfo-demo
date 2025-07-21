@@ -75,10 +75,10 @@ steps:
         echo "🔍 Checking for failure marker..."
 
         echo "📦 Installing curl jq..."
-        apt-get update && apt-get install -y curl jq gi
+        apt-get update && apt-get install -y curl jq git
 
-        FAIL_REASON=$(cat /workspace/failure_marker)
-        echo "🔍 Reason: $$FAIL_REASON"
+        echo "📂 Listing /workspace/failure_marker contents:"
+        ls -la /workspace/failure_marker
 
         echo "📣 Sending Teams notification..."
         if [ -f /workspace/failure_marker ]; then
@@ -102,7 +102,9 @@ steps:
                 ]
               }" \
             "$$TEAMS_WEBHOOK_FAILURE_URL"
+            
         else
+        
           COMMIT_SHA=$(git rev-parse HEAD)
 
           echo "Fetching commit info..."
