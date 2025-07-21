@@ -82,7 +82,7 @@ steps:
 
         echo "📣 Sending failure notification to Teams..."
         curl -X POST -H "Content-Type: application/json" \
-          -d @- "$TEAMS_WEBHOOK_FAILURE_URL" <<EOF
+          -d @- "$$TEAMS_WEBHOOK_FAILURE_URL" <<EOF
         {
           "@type": "MessageCard",
           "@context": "http://schema.org/extensions",
