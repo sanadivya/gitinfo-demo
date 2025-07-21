@@ -75,7 +75,7 @@ steps:
         echo "🔍 Checking for failure marker..."
 
         echo "📦 Installing curl jq..."
-        apt-get update && apt-get install -y curl jq gi
+        apt-get update && apt-get install -y curl jq git
 
         FAIL_REASON=$(cat /workspace/failure_marker)
         echo "🔍 Reason: $$FAIL_REASON"
