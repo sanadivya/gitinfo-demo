@@ -3,3 +3,27 @@ ESCAPED_DETAILS=$(printf '%s' "$${DETAILS}" | jq -R | jq -s -r 'join("\\n")')
 
 COMMIT_API="https://api.github.com/repos/MSN-EPIC/epic-be/commits/$$COMMIT_SHA"
 PR_API="https://api.github.com/repos/MSN-EPIC/epic-be/commits/$$COMMIT_SHA/pulls"
+
+
+echo "📣 Sending Teams notification..."
+        if [ -f /workspace/failure_marker ]; then
+          echo "❌ Failure detected. Sending failure message..."
+
+          curl -X POST -H "Content-Type: application/json" \
+          -d "{
+                \"@type\": \"MessageCard\",
+                \"@context\": \"http://schema.org/extensions\",
+                \"summary\": \"Deployment Failure\", 
+                \"themeColor\": \"FF0000\",
+                \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\",
+                \"sections\": [
+                  {
+                    \"activityTitle\": \"Failure Details\",
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\\n- **Reason**: $$FAIL_REASON"}, 
+                    {
+                      \"activityTitle\": \"Status\", 
+                      \"text\": \"Deployment Failed.\"
+                    }
+                ]
+              }" \
+            "$$TEAMS_WEBHOOK_FAILURE_URL"

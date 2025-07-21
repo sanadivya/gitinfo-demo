@@ -80,28 +80,27 @@ steps:
         FAIL_REASON=$(cat /workspace/failure_marker)
         echo "🔍 Reason: $$FAIL_REASON"
 
-        echo "📣 Sending Teams notification..."
-        if [ -f /workspace/failure_marker ]; then
-          echo "❌ Failure detected. Sending failure message..."
-
-          curl -X POST -H "Content-Type: application/json" \
-          -d "{
-                \"@type\": \"MessageCard\",
-                \"@context\": \"http://schema.org/extensions\",
-                \"summary\": \"Deployment Failure\", 
-                \"themeColor\": \"FF0000\",
-                \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\",
-                \"sections\": [
-                  {
-                    \"activityTitle\": \"Failure Details\",
-                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\\n- **Reason**: $$FAIL_REASON"}, 
-                    {
-                      \"activityTitle\": \"Status\", 
-                      \"text\": \"Deployment Failed.\"
-                    }
-                ]
-              }" \
-            "$$TEAMS_WEBHOOK_FAILURE_URL"
+        echo "📣 Sending failure notification to Teams..."
+        curl -X POST -H "Content-Type: application/json" \
+          -d @- "$TEAMS_WEBHOOK_FAILURE_URL" <<EOF
+        {
+          "@type": "MessageCard",
+          "@context": "http://schema.org/extensions",
+          "summary": "Deployment Failure",
+          "themeColor": "FF0000",
+          "title": "❌ Deployment failed for BE '${_ENV}' environment",
+          "sections": [
+            {
+              "activityTitle": "Failure Details",
+              "text": "- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: ${SHORT_SHA}\\n- **Reason**: ${FAIL_REASON}"
+            },
+            {
+              "activityTitle": "Status",
+              "text": "Deployment Failed."
+            }
+          ]
+        }
+        EOF
             
         else
         
