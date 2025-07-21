@@ -34,6 +34,7 @@ steps:
 
   - id: Push
     allowFailure: true
+    waitFor: ["Build"]
     name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
     args:
@@ -45,6 +46,7 @@ steps:
         exit 1
 
   - id: Deploy
+    waitFor: ["Push"]
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "bash"
     args:
@@ -62,12 +64,13 @@ steps:
           echo "Deploy failed" > /workspace/failure_marker
         fi
 
-  - name: "ubuntu"
-    id: Notify
+  # Step 4A: Notify on any failure (runs after first failure from any step)
+  - id: NotifyFailure
+    name: "ubuntu"
     entrypoint: "bash"
     waitFor: ["Build", "Push", "Deploy"]
     allowFailure: true
-    secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
+    secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_FAILURE_URL']
     args:
       - -c
       - |
@@ -81,9 +84,9 @@ steps:
         echo "🔍 Reason: $$FAIL_REASON"
 
         echo "📣 Sending Teams notification..."
+
         if [ -f /workspace/failure_marker ]; then
           echo "❌ Failure detected. Sending failure message..."
-
           curl -X POST -H "Content-Type: application/json" \
           -d "{
                 \"@type\": \"MessageCard\",
@@ -94,28 +97,40 @@ steps:
                 \"sections\": [
                   {
                     \"activityTitle\": \"Failure Details\",
-                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"}, 
-                    {
-                      \"activityTitle\": \"Status\", 
-                      \"text\": \"Deployment Failed.\"
-                    }
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"
+                  },
+                  {
+                    \"activityTitle\": \"Status\", 
+                    \"text\": \"Deployment Failed.\"
+                  }
                 ]
               }" \
             "$$TEAMS_WEBHOOK_FAILURE_URL"
-        else
-          COMMIT_SHA=$(git rev-parse HEAD)
+        fi
 
-          echo "Fetching commit info..."
-          COMMIT_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA"
-          COMMIT_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" "$$COMMIT_API")
-          COMMIT_MESSAGE=$(echo "$$COMMIT_DATA" | jq -r '.commit.message')
-          COMMIT_AUTHOR=$(echo "$$COMMIT_DATA" | jq -r '.commit.author.name')
+  # Step 4B: Notify on success (only if Deploy succeeds)
+  - id: NotifySuccess
+    name: "ubuntu"
+    entrypoint: "bash"
+    waitFor: ["Deploy"]
+    allowFailure: true
+    secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL']
+    args:
+      - -c
+      - |
+        echo "🔔 Notify step started"
+        echo "🔍 Checking for failure marker..."
 
-          PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
-          PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
-          PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
+        echo "📦 Installing curl jq..."
+        apt-get update && apt-get install -y curl jq git
 
-          if [ "$$PR_COUNT" -gt 0 ]; then
+        COMMIT_SHA=$(git rev-parse HEAD)
+
+        PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
+        PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
+        PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
+
+        if [ "$$PR_COUNT" -gt 0 ]; then
             PR_NUMBER=$(echo "$$PR_DATA" | jq -r '.[0].number')
             PR_TITLE=$(echo "$$PR_DATA" | jq -r '.[0].title')
             PR_SOURCE=$(echo "$$PR_DATA" | jq -r '.[0].head.ref')
@@ -158,19 +173,20 @@ steps:
             THEME_COLOR="FF0000"  # Red
           fi
 
+        if [ ! -f /workspace/failure_marker ]; then
+          echo "✅ All steps succeeded. Sending success message..."
           curl -X POST -H "Content-Type: application/json" \
           -d "{
                 \"@type\": \"MessageCard\",
                 \"@context\": \"http://schema.org/extensions\",
-                \"summary\": \"Deployment Notification\",
-                \"themeColor\": \"$$THEME_COLOR\",
+                \"summary\": \"Deployment Success\",
+                \"themeColor\": \"00FF00\",
                 \"title\": \"✅ New version deployed to ${_ENV} environment\",
                 \"sections\": [
                   {
                     \"activityTitle\": \"Deployment Details\",
                     \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"
                   },
-                  $${GIT_INFO_SECTION} 
                   {
                     \"activityTitle\": \"Status\",
                     \"text\": \"Deployment completed successfully.\"
