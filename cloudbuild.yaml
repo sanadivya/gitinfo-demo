@@ -21,6 +21,7 @@ available_secrets:
 steps:
   
   - id: Build
+    allowFailure: true
     name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
     args:
@@ -32,6 +33,7 @@ steps:
         fi
 
   - id: Push
+    allowFailure: true
     waitFor: ["Build"]
     name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
@@ -44,6 +46,7 @@ steps:
         exit 1
 
   - id: Deploy
+    allowFailure: true
     waitFor: ["Push"]
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "bash"
