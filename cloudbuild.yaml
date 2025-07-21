@@ -75,10 +75,7 @@ steps:
         echo "🔍 Checking for failure marker..."
 
         echo "📦 Installing curl jq..."
-        apt-get update && apt-get install -y curl jq git
-
-        echo "📂 Listing /workspace/failure_marker contents:"
-        ls -la /workspace/failure_marker
+        apt-get update && apt-get install -y curl jq gi
 
         FAIL_REASON=$(cat /workspace/failure_marker)
         echo "🔍 Reason: $$FAIL_REASON"
@@ -97,7 +94,7 @@ steps:
                 \"sections\": [
                   {
                     \"activityTitle\": \"Failure Details\",
-                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\\n- **Reason**: $${FAIL_REASON}"}, 
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\\n- **Reason**: ${FAIL_REASON}"}, 
                     {
                       \"activityTitle\": \"Status\", 
                       \"text\": \"Deployment Failed.\"
