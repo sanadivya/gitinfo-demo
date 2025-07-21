@@ -79,6 +79,8 @@ steps:
 
         echo "📂 Listing /workspace/failure_marker contents:"
         ls -la /workspace/failure_marker
+        FAIL_REASON=$$(cat /workspace/failure_marker)
+        echo "🔍 Reason: $$FAIL_REASON"
 
         echo "📣 Sending Teams notification..."
         if [ -f /workspace/failure_marker ]; then
@@ -94,7 +96,7 @@ steps:
                 \"sections\": [
                   {
                     \"activityTitle\": \"Failure Details\",
-                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"}, 
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\\n- **Reason**: $FAIL_REASON"}, 
                     {
                       \"activityTitle\": \"Status\", 
                       \"text\": \"Deployment Failed.\"
