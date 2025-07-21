@@ -21,7 +21,6 @@ available_secrets:
 steps:
   
   - id: Build
-    allowFailure: true
     name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
     args:
@@ -33,7 +32,6 @@ steps:
         fi
 
   - id: Push
-    allowFailure: true
     waitFor: ["Build"]
     name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
@@ -113,7 +111,6 @@ steps:
     name: "ubuntu"
     entrypoint: "bash"
     waitFor: ["Deploy"]
-    allowFailure: true
     secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL']
     args:
       - -c
