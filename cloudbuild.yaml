@@ -104,7 +104,7 @@ steps:
                 \"sections\": [
                   {
                     \"activityTitle\": \"Failure Details\",
-                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\\n- **Commit Author**: $COMMIT_AUTHOR\"}, 
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\\n- **Commit Author**: $$COMMIT_AUTHOR\"}, 
                     {
                       \"activityTitle\": \"Status\", 
                       \"text\": \"Deployment Failed.\"
