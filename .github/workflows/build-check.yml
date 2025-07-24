@@ -1,0 +1,42 @@
+name: Build Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Load environment variables based on branch
+        run: |
+          echo "🧪 Branch: ${{github.head_ref}}"
+          
+          if [[ "${github.head_ref}" == "dev" ]]; then
+            echo "${{ secrets.ENV_DEV }}" > .env
+          else
+            echo "⚠️ Skipping env setup — branch ${{ github.head_ref }} is not dev/staging/uat/prod."
+            exit 1
+          fi
+
+      - name: Export .env values to GITHUB_ENV
+        run: |
+          cat .env | grep -v '^#' | while read line; do
+            echo "$line" >> $GITHUB_ENV
+          done
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build app
+        run: npm run build
