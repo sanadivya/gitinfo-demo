@@ -22,7 +22,7 @@ jobs:
         run: |
           echo "🧪 Branch: ${{github.head_ref}}"
           
-          if [[ "${github.head_ref}" == "dev" ]]; then
+          if [[ "${{github.head_ref}}" == "dev" ]]; then
             echo "${{ secrets.ENV_DEV }}" > .env
           else
             echo "⚠️ Skipping env setup — branch ${{ github.head_ref }} is not dev/staging/uat/prod."
