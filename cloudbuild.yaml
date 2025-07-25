@@ -28,8 +28,9 @@ steps:
       - -c
       - |
         echo "🔧 Simulating build..."
-        echo "❌ Simulated build failure for testing" > /workspace/failure_marker
-        exit 1
+        if ! docker build -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE_NAME}:$SHORT_SHA" .; then
+          echo "Build failed" > /workspace/failure_marker
+        fi
 
   - id: Push
     allowFailure: true
