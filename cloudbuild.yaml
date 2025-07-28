@@ -74,7 +74,7 @@ steps:
     args:
       - -c
       - |
-        set -x
+        set -euo pipefail
 
         echo "🔔 Notify step started"
         echo "🔍 Checking for failure marker..."
@@ -119,17 +119,18 @@ steps:
 
           echo "Reached else block"
 
-          LATEST_PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
-             "https://api.github.com/repos/sanadivya/gitinfo-demo/pulls?state=closed&sort=updated&direction=desc&per_page=1" \
-             | jq '[.[] | select(.merged_at != null)][0]')
-
-          echo "$$LATEST_PR_DATA""
-
           PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
           PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
           PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
 
           if [ "$$PR_COUNT" -gt 0 ]; then
+            
+            LATEST_PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
+              "https://api.github.com/repos/sanadivya/gitinfo-demo/pulls?state=closed&sort=updated&direction=desc&per_page=1" \
+              | jq '[.[] | select(.merged_at != null)][0]')
+
+            echo "$$LATEST_PR_DATA"
+
             PR_NUMBER=$(echo "$$LATEST_PR_DATA" | jq -r '.number')
             PR_TITLE=$(echo "$$LATEST_PR_DATA" | jq -r '.title')
             PR_SOURCE=$(echo "$$LATEST_PR_DATA" | jq -r '.head.ref')
