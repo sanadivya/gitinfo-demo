@@ -123,10 +123,10 @@ steps:
           PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
 
           if [ "$$PR_COUNT" -gt 0 ]; then
-            PR_NUMBER=$(echo "$$LATEST_PR_DATA" | jq -r '.[0].number')
-            PR_TITLE=$(echo "$$LATEST_PR_DATA" | jq -r '.[0].title')
-            PR_SOURCE=$(echo "$$LATEST_PR_DATA" | jq -r '.[0].head.ref')
-            PR_TARGET=$(echo "$$LATEST_PR_DATA" | jq -r '.[0].base.ref')
+            PR_NUMBER=$(echo "$$LATEST_PR_DATA" | jq -r '.number')
+            PR_TITLE=$(echo "$$LATEST_PR_DATA" | jq -r '.title')
+            PR_SOURCE=$(echo "$$LATEST_PR_DATA" | jq -r '.head.ref')
+            PR_TARGET=$(echo "$$LATEST_PR_DATA" | jq -r '.base.ref')
             PR_DESCRIPTION=$(echo "$$LATEST_PR_DATA" | jq -r '.body')
 
             echo "PR Number: $$PR_NUMBER"
@@ -139,7 +139,7 @@ steps:
               PR_DESCRIPTION="-"
             fi
 
-            PR_AUTHOR_LOGIN=$(echo "$$LATEST_PR_DATA" | jq -r '.[0].user.login')
+            PR_AUTHOR_LOGIN=$(echo "$$LATEST_PR_DATA" | jq -r '.user.login')
 
             PR_AUTHOR_NAME=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
               "https://api.github.com/users/$${PR_AUTHOR_LOGIN}" | jq -r '.name')
