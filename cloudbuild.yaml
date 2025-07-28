@@ -88,11 +88,9 @@ steps:
         COMMIT_MESSAGE=$(echo "$$COMMIT_DATA" | jq -r '.commit.message')
         COMMIT_AUTHOR=$(echo "$$COMMIT_DATA" | jq -r '.commit.author.name')
 
-        FAIL_REASON=$(cat /workspace/failure_marker)
-        echo "🔍 Reason: $$FAIL_REASON"
-
         echo "📣 Sending Teams notification..."
         if [ -f /workspace/failure_marker ]; then
+        
           echo "❌ Failure detected. Sending failure message..."
           FAIL_REASON=$(cat /workspace/failure_marker)
           echo "🔍 Reason: $$FAIL_REASON"
@@ -116,6 +114,9 @@ steps:
               }" \
             "$$TEAMS_WEBHOOK_FAILURE_URL"
         else
+        
+          echo "Reached else block"
+
           LATEST_PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
              "https://api.github.com/repos/sanadivya/gitinfo-demo/pulls?state=closed&sort=updated&direction=desc&per_page=1" \
              | jq '[.[] | select(.merged_at != null)][0]')
