@@ -114,9 +114,11 @@ steps:
               }" \
             "$$TEAMS_WEBHOOK_FAILURE_URL"
         else
-          LATEST_PR_DATA=$(curl -s -H "Authorization: token YOUR_GITHUB_TOKEN" \
-             "https://api.github.com/repos/MSN-EPIC/epic-be/pulls?state=closed&sort=updated&direction=desc&per_page=1" \
+          LATEST_PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
+             "https://api.github.com/repos/sanadivya/gitinfo-demo/pulls?state=closed&sort=updated&direction=desc&per_page=1" \
              | jq '[.[] | select(.merged_at != null)][0]')
+
+          echo "$$LATEST_PR_DATA""
 
           PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
           PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")

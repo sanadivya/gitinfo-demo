@@ -289,3 +289,7 @@ echo "📣 Sending Teams notification..."
           PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
           PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
           PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
+
+          LATEST_PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
+             "https://api.github.com/repos/MSN-EPIC/epic-be/pulls?state=closed&sort=updated&direction=desc&per_page=1" \
+             | jq '[.[] | select(.merged_at != null)][0]')
