@@ -74,10 +74,8 @@ steps:
     args:
       - -c
       - |
-        set -e
-        set -u
-        set -o pipefail
-        
+        set -x
+
         echo "🔔 Notify step started"
         echo "🔍 Checking for failure marker..."
 
@@ -97,7 +95,7 @@ steps:
         
           echo "❌ Failure detected. Sending failure message..."
           FAIL_REASON=$(cat /workspace/failure_marker)
-          echo "🔍 Reason: $$FAIL_REASON"
+          echo "🔍 Reason: $FAIL_REASON"
 
           curl -X POST -H "Content-Type: application/json" \
           -d "{
