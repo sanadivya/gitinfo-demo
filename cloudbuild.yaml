@@ -74,6 +74,10 @@ steps:
     args:
       - -c
       - |
+        set -e
+        set -u
+        set -o pipefail
+        
         echo "🔔 Notify step started"
         echo "🔍 Checking for failure marker..."
 
@@ -114,7 +118,7 @@ steps:
               }" \
             "$$TEAMS_WEBHOOK_FAILURE_URL"
         else
-        
+
           echo "Reached else block"
 
           LATEST_PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
