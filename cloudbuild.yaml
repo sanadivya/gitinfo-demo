@@ -94,6 +94,8 @@ steps:
         echo "📣 Sending Teams notification..."
         if [ -f /workspace/failure_marker ]; then
           echo "❌ Failure detected. Sending failure message..."
+          FAIL_REASON=$(cat /workspace/failure_marker)
+          echo "🔍 Reason: $$FAIL_REASON"
 
           curl -X POST -H "Content-Type: application/json" \
           -d "{
