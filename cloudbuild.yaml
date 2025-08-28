@@ -264,3 +264,5 @@ steps:
                   ]
                 }" \
             "$$TEAMS_WEBHOOK_URL" >/dev/null || true
+
+        fi
