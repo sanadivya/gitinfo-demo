@@ -1,0 +1,266 @@
+substitutions:
+  _ENV: dev
+  _PROJECT_ID: articulate-area-464808-q4
+  _SERVICE_NAME: gitinfo-demo
+  _REGION: europe-west1
+  _REPO: gitinfo-demo
+  _SERVICE_ACCOUNT: 715553450089-compute@developer.gserviceaccount.com
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+available_secrets:
+  secretManager:
+    - versionName: projects/${_PROJECT_ID}/secrets/GITHUB_TOKEN/versions/latest
+      env: GITHUB_TOKEN
+    - versionName: projects/${_PROJECT_ID}/secrets/TEAMS_WEBHOOK_URL/versions/latest
+      env: TEAMS_WEBHOOK_URL
+    - versionName: projects/${_PROJECT_ID}/secrets/TEAMS_WEBHOOK_FAILURE_URL/versions/latest
+      env: TEAMS_WEBHOOK_FAILURE_URL
+
+steps:
+  
+  - id: Build
+    allowFailure: true
+    name: "gcr.io/cloud-builders/docker"
+    entrypoint: "bash"
+    args:
+      - -c
+      - |
+        echo "🔧 Simulating build..."
+        if ! docker build -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE_NAME}:$SHORT_SHA" .; then
+          echo "Build failed" > /workspace/failure_marker
+        fi
+
+  - id: Push
+    allowFailure: true
+    waitFor: ["Build"]
+    name: "gcr.io/cloud-builders/docker"
+    entrypoint: "bash"
+    args:
+      - -c
+      - |
+        echo "📦 Pushing image..."
+        if ! docker push "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE_NAME}:$SHORT_SHA"; then
+          echo "Push failed" > /workspace/failure_marker
+        fi
+
+  - id: Deploy
+    allowFailure: true
+    waitFor: ["Push"]
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - -c
+      - |
+        echo "🚀 Starting deployment..."
+        if ! gcloud run deploy "${_SERVICE_NAME}" \
+          --image="${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE_NAME}:$SHORT_SHA" \
+          --region="${_REGION}" \
+          --allow-unauthenticated \
+          --service-account="${_SERVICE_ACCOUNT}" \
+          --set-secrets="TEAMS_WEBHOOK_URL=TEAMS_WEBHOOK_URL:latest" \
+          --set-secrets="TEAMS_WEBHOOK_FAILURE_URL=TEAMS_WEBHOOK_FAILURE_URL:latest" \
+          --set-secrets="GITHUB_TOKEN=GITHUB_TOKEN:latest"; then
+          echo "Deploy failed" > /workspace/failure_marker
+        fi
+
+  - name: "ubuntu"
+    id: Notify
+    entrypoint: "bash"
+    waitFor: ["Build", "Push", "Deploy"]
+    allowFailure: true
+    secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
+    args:
+      - -c
+      - |
+        set -euo pipefail
+
+        echo "🔔 Notify step started"
+        echo "🔍 Checking for failure marker..."
+
+        echo "📦 Installing curl jq..."
+        apt-get update && apt-get install -y curl jq git
+
+        COMMIT_SHA=$(git rev-parse HEAD)
+
+        echo "Fetching commit info..."
+        COMMIT_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA"
+        COMMIT_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" "$$COMMIT_API")
+        COMMIT_MESSAGE=$(echo "$$COMMIT_DATA" | jq -r '.commit.message')
+        COMMIT_AUTHOR=$(echo "$$COMMIT_DATA" | jq -r '.commit.author.name')
+
+        echo "📣 Sending Teams notification..."
+        if [ -f /workspace/failure_marker ]; then
+        
+          echo "❌ Failure detected. Sending failure message..."
+          FAIL_REASON=$(cat /workspace/failure_marker)
+          echo "🔍 Reason: $$FAIL_REASON"
+
+          curl -X POST -H "Content-Type: application/json" \
+          -d "{
+                \"@type\": \"MessageCard\",
+                \"@context\": \"http://schema.org/extensions\",
+                \"summary\": \"Deployment Failure\", 
+                \"themeColor\": \"FF0000\",
+                \"title\": \"❌ Deployment failed for BE '${_ENV}' environment\",
+                \"sections\": [
+                  {
+                    \"activityTitle\": \"Failure Details\",
+                    \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\\n- **Commit Author**: $$COMMIT_AUTHOR\"}, 
+                    {
+                      \"activityTitle\": \"Status\", 
+                      \"text\": \"Deployment Failed.\"
+                    }
+                ]
+              }" \
+            "$$TEAMS_WEBHOOK_FAILURE_URL"
+        else
+
+          echo "Reached else block"
+
+          PR_API="https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls"
+          PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" -H "Accept: application/vnd.github.groot-preview+json" "$$PR_API")
+          PR_COUNT=$(echo "$$PR_DATA" | jq 'length')
+
+          if [ "$$PR_COUNT" -gt 0 ]; then
+
+
+            # 1) PR(s) associated with THIS commit
+            LATEST_PR_DATA=$(
+              curl -sS \
+                -H "Authorization: Bearer $$GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$${COMMIT_SHA}/pulls" \
+              | jq 'if type=="array" then
+                      [ .[] | select(.merged_at != null) ][0]
+                    else
+                      null
+                    end'
+            )
+
+            if [ -z "$$LATEST_PR_DATA" ] || [ "$$LATEST_PR_DATA" = "null" ]; then
+              COMMIT_JSON=$(
+                curl -sS \
+                  -H "Authorization: Bearer $$GITHUB_TOKEN" \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "X-GitHub-Api-Version: 2022-11-28" \
+                  "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$${COMMIT_SHA}"
+              )
+              PARENT2_SHA=$(echo "$$COMMIT_JSON" | jq -r '.parents[1].sha // empty')
+
+              if [ -n "$$PARENT2_SHA" ]; then
+                LATEST_PR_DATA=$(
+                  curl -sS \
+                    -H "Authorization: Bearer $$GITHUB_TOKEN" \
+                    -H "Accept: application/vnd.github+json" \
+                    -H "X-GitHub-Api-Version: 2022-11-28" \
+                    "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$${PARENT2_SHA}/pulls" \
+                  | jq 'if type=="array" then
+                          [ .[] | select(.merged_at != null) ][0]
+                        else
+                          null
+                        end'
+                )
+              fi
+
+              # 3) Last resort: parse PR number from the merge commit message
+              if [ -z "$$LATEST_PR_DATA" ] || [ "$$LATEST_PR_DATA" = "null" ]; then
+                PR_NUM=$(echo "$$COMMIT_JSON" \
+                  | jq -r '.commit.message
+                            | capture("Merge pull request #(?<n>[0-9]+)")?.n // empty')
+                if [ -n "$$PR_NUM" ]; then
+                  LATEST_PR_DATA=$(
+                    curl -sS \
+                      -H "Authorization: Bearer $$GITHUB_TOKEN" \
+                      -H "Accept: application/vnd.github+json" \
+                      -H "X-GitHub-Api-Version: 2022-11-28" \
+                      "https://api.github.com/repos/sanadivya/gitinfo-demo/pulls/$${PR_NUM}"
+                  )
+                fi
+              fi
+          fi
+
+          PR_NUMBER=$(echo "$$LATEST_PR_DATA" | jq -r '.number')
+          PR_TITLE=$(echo "$$LATEST_PR_DATA" | jq -r '.title')
+          PR_DESCRIPTION=$(echo "$$LATEST_PR_DATA" | jq -r '.body // "-"')
+          PR_AUTHOR_LOGIN=$(echo "$$LATEST_PR_DATA" | jq -r '.user.login')
+          # (Optional) author real name:
+          PR_AUTHOR_NAME=$(
+            curl -sS -H "Authorization: Bearer $$GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/users/$${PR_AUTHOR_LOGIN}" | jq -r '.name // empty'
+          )
+          [ -z "$$PR_AUTHOR_NAME" ] && PR_AUTHOR_NAME="$${PR_AUTHOR_LOGIN}"
+
+          echo "PR Number: $$PR_NUMBER"
+          echo "Title: $$PR_TITLE"
+          echo "Source Branch: $$PR_SOURCE"
+          echo "Target Branch: $$PR_TARGET"
+          echo "Description: $$PR_DESCRIPTION"
+
+          # Guard: if we didn't end up with an object, skip PR section
+          if [ -z "$$LATEST_PR_DATA" ] || ! echo "$$LATEST_PR_DATA" | jq -e 'type == "object"' >/dev/null 2>&1; then
+            GIT_INFO_SECTION=""
+            DETAILS=""
+          else
+            PR_TITLE=$(echo "$$LATEST_PR_DATA" | jq -r '.title // "-"')
+            PR_NUMBER=$(echo "$$LATEST_PR_DATA" | jq -r '.number // empty')
+            PR_URL=$(echo "$$LATEST_PR_DATA" | jq -r '.html_url // empty')
+
+            PR_DESCRIPTION=$(echo "$$LATEST_PR_DATA" | jq -r '.body // ""')
+            [ -z "$$PR_DESCRIPTION" ] && PR_DESCRIPTION="-"
+
+            PR_AUTHOR_LOGIN=$(echo "$$LATEST_PR_DATA" | jq -r '.user.login // empty')
+            PR_AUTHOR_NAME=$(
+              curl -sS \
+                -H "Authorization: Bearer $$GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/users/$${PR_AUTHOR_LOGIN}" \
+              | jq -r '.name // empty'
+            )
+            [ -z "$$PR_AUTHOR_NAME" ] && PR_AUTHOR_NAME="$${PR_AUTHOR_LOGIN}"
+
+            PR_DESCRIPTION_FORMATTED=$(printf "%s" "$$PR_DESCRIPTION" | sed 's/^/  /' | sed ':a;N;$!ba;s/\n/\\n/g')
+
+            DETAILS="\n- **PR Title**: $${PR_TITLE}\n- **PR Number**: #$${PR_NUMBER}\n- **PR URL**: $${PR_URL}\n- **PR Description**: \n\n$${PR_DESCRIPTION_FORMATTED}\n- **PR Author**: $${PR_AUTHOR_NAME}"
+            ESCAPED_DETAILS=$(printf '%s' "$$DETAILS" | jq -R | jq -s -r 'join("\\n")')
+
+            GIT_INFO_SECTION="{
+              \"activityTitle\": \"PR Details\",
+              \"text\": \"$${ESCAPED_DETAILS}\"
+            },"
+          fi
+
+          # Theme color by environment (with a safe default)
+          case "${_ENV}" in
+            dev)      THEME_COLOR="00FF00" ;;  # green
+            staging)  THEME_COLOR="FFA500" ;;  # orange
+            prod|production) THEME_COLOR="FF0000" ;;  # red
+            *)        THEME_COLOR="2EB886" ;;  # teal default
+          esac
+
+          # Send Teams card
+          curl -sS -X POST -H "Content-Type: application/json" \
+            -d "{
+                  \"@type\": \"MessageCard\",
+                  \"@context\": \"http://schema.org/extensions\",
+                  \"summary\": \"Deployment Notification\",
+                  \"themeColor\": \"$$THEME_COLOR\",
+                  \"title\": \"✅ New version deployed to ${_ENV} environment\",
+                  \"sections\": [
+                    {
+                      \"activityTitle\": \"Deployment Details\",
+                      \"text\": \"- **Environment**: ${_ENV}\\n- **Project**: ${_PROJECT_ID}\\n- **Service**: ${_SERVICE_NAME}\\n- **Version**: $SHORT_SHA\"
+                    },
+                    $${GIT_INFO_SECTION}
+                    {
+                      \"activityTitle\": \"Status\",
+                      \"text\": \"Deployment completed successfully.\"
+                    }
+                  ]
+                }" \
+            "$$TEAMS_WEBHOOK_URL" >/dev/null || true
