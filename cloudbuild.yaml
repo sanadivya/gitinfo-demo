@@ -80,6 +80,7 @@ steps:
           \"summary\": \"Cloud Build Notification\",
           \"sections\": [{
             \"activityTitle\": \"✅ Deployment Successful\",
+            \"text\": \"### 📌 Deployment Details\",   
             \"facts\": [
               {\"name\": \"Service\", \"value\": \"${_SERVICE_NAME}\"},
               {\"name\": \"Project\", \"value\": \"${_PROJECT_ID}\"},
