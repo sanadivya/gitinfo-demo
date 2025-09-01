@@ -87,5 +87,5 @@ steps:
             \"markdown\": true
           }]
         }",
-        $$TEAMS_WEBHOOK_URL
+        "$(TEAMS_WEBHOOK_URL)"
       ]
