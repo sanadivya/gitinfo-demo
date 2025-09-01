@@ -82,6 +82,8 @@ steps:
             \"activityTitle\": \"✅ Deployment Successful\",
             \"facts\": [
               {\"name\": \"Service\", \"value\": \"${_SERVICE_NAME}\"},
+              {\"name\": \"Project\", \"value\": \"${_PROJECT_ID}\"},
+              {\"name\": \"Version\", \"value\": \"$SHORT_SHA\"},
               {\"name\": \"Environment\", \"value\": \"${_ENV}\"}
             ],
             \"markdown\": true
