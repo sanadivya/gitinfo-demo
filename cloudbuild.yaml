@@ -65,55 +65,28 @@ steps:
           echo "Deploy failed" > /workspace/failure_marker
         fi
 
-  - name: 'curlimages/curl'
+  - name: 'gcr.io/cloud-builders/curl'
     id: Notify
     entrypoint: "bash"
     waitFor: ["Build", "Push", "Deploy"]
     allowFailure: true
     secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
     args:
-      - '-H'
-      - 'Content-Type: application/json'
-      - '-d'
-      - |
-        {
-          "@type": "MessageCard",
-          "@context": "http://schema.org/extensions",
-          "themeColor": "0076D7",
-          "summary": "Cloud Build Notification",
-          "sections": [
-            {
-              "activityTitle": "✅ Deployment Successful",
-              "activitySubtitle": "Service: ${_SERVICE_NAME}",
-              "facts": [
-                {
-                  "name": "Environment:",
-                  "value": "${_ENV}"
-                },
-                {
-                  "name": "Project:",
-                  "value": "${_PROJECT_ID}"
-                },
-                {
-                  "name": "Region:",
-                  "value": "${_REGION}"
-                },
-                {
-                  "name": "Commit:",
-                  "value": "$SHORT_SHA"
-                }
-              ],
-              "markdown": true
-            }
-          ],
-          "potentialAction": [
-            {
-              "@type": "OpenUri",
-              "name": "View Build Logs",
-              "targets": [
-                { "os": "default", "uri": "https://console.cloud.google.com/cloud-build/builds/$$BUILD_ID?project=${_PROJECT_ID}" }
-              ]
-            }
-          ]
-        }
-      - '$$TEAMS_WEBHOOK_URL'
+      [
+        "-H", "Content-Type: application/json",
+        "-d", "{
+          \"@type\": \"MessageCard\",
+          \"@context\": \"http://schema.org/extensions\",
+          \"themeColor\": \"0076D7\",
+          \"summary\": \"Cloud Build Notification\",
+          \"sections\": [{
+            \"activityTitle\": \"✅ Deployment Successful\",
+            \"facts\": [
+              {\"name\": \"Service\", \"value\": \"${_SERVICE_NAME}\"},
+              {\"name\": \"Environment\", \"value\": \"${_ENV}\"}
+            ],
+            \"markdown\": true
+          }]
+        }",
+        "$$TEAMS_WEBHOOK_URL"
+      ]
