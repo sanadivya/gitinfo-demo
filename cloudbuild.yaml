@@ -89,7 +89,7 @@ steps:
 
         echo "Found PR #$$PR_NUMBER"
 
-        PR_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+        PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
           "https://api.github.com/repos/sanadivya/gitinfo-demo/pulls/$$PR_NUMBER")
 
         PR_TITLE=$(echo "$$PR_DATA" | jq -r '.title')
