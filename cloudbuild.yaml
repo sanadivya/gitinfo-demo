@@ -99,7 +99,7 @@ steps:
         PR_URL=$(echo "$$PR_DATA" | jq -r 'try (.[0].html_url) catch "null"')
         PR_DESC=$(echo "$$PR_DATA" | jq -r 'try (.[0].body) catch ""')
 
-        PR_DESC_ESCAPED=$(jq -Rn --arg v "$PR_DESC" '$v')
+        PR_DESC_ESCAPED=$(jq -Rn --arg v "$$PR_DESC" '$v')
 
         echo "PR_NUMBER=$$PR_NUMBER"
         echo "PR_TITLE=$$PR_TITLE"
