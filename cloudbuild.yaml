@@ -71,6 +71,7 @@ steps:
     secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
     waitFor: ["Build", "Push", "Deploy"]
     allowFailure: true
+    entrypoint: bash
     args:
       - -c
       - |
