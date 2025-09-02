@@ -96,10 +96,10 @@ steps:
         PR_USER=$(echo "$$PR_DATA" | jq -r '.user.login')
         PR_URL=$(echo "$$PR_DATA" | jq -r '.html_url')
 
-        echo "PR_TITLE=$PR_TITLE" >> $$
-        echo "PR_USER=$PR_USER" >> $$
-        echo "PR_URL=$PR_URL" >> $$
-        echo "PR_NUMBER=$PR_NUMBER" >> $$
+        echo "PR_TITLE=$$PR_TITLE" >> $$
+        echo "PR_USER=$$PR_USER" >> $$
+        echo "PR_URL=$$PR_URL" >> $$
+        echo "PR_NUMBER=$$PR_NUMBER" >> $$
 
 
   - name: 'gcr.io/cloud-builders/curl'
