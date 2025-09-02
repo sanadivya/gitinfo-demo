@@ -66,10 +66,11 @@ steps:
           echo "Deploy failed" > /workspace/failure_marker
         fi
 
-  - name: 'gcr.io/cloud-builders/git'
-    id: Get-PR-Details
-    secretEnv: ['GITHUB_TOKEN']
-    entrypoint: bash
+  - name: 'gcr.io/cloud-builders/curl'
+    id: PR-Notify
+    secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
+    waitFor: ["Build", "Push", "Deploy"]
+    allowFailure: true
     args:
       - -c
       - |
@@ -77,12 +78,12 @@ steps:
 
         apt-get update && apt-get install -y jq curl
 
-        echo "Fetching PR details for commit: $REVISION_ID"
-        echo "${_REVISION_ID}"
+        echo "Fetching PR details for commit: ${_REVISION_ID}"
 
-        PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
+        PR_DATA=$(curl -s \
+          -H "Authorization: token $$GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.groot-preview+json" \
-          "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$REVISION_ID/pulls")
+          "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/${_REVISION_ID}/pulls")
 
         echo "---- RAW PR_DATA ----"
         echo "$$PR_DATA"
@@ -93,22 +94,10 @@ steps:
         PR_USER=$(echo "$$PR_DATA" | jq -r 'try (.[0].user.login) catch "N/A"')
         PR_URL=$(echo "$$PR_DATA" | jq -r 'try (.[0].html_url) catch "N/A"')
 
-        echo "PR_NUMBER=$$PR_NUMBER" >> /workspace/pr_info.sh
-        echo "PR_TITLE=$$PR_TITLE" >> /workspace/pr_info.sh
-        echo "PR_USER=$$PR_USER" >> /workspace/pr_info.sh
-        echo "PR_URL=$$PR_URL" >> /workspace/pr_info.sh
-
-  - name: 'gcr.io/cloud-builders/curl'
-    id: Notify
-    waitFor: ["Build", "Push", "Deploy", "Get-PR-Details"]
-    allowFailure: true
-    secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
-    args:
-      - -c
-      - |
-        set -e
-
-        source /workspace/pr_info.sh || true
+        echo "PR_NUMBER=$$PR_NUMBER"
+        echo "PR_TITLE=$$PR_TITLE"
+        echo "PR_USER=$$PR_USER"
+        echo "PR_URL=$$PR_URL"
 
         curl -X POST -H "Content-Type: application/json" \
           -d "{
@@ -118,7 +107,7 @@ steps:
             \"summary\": \"Cloud Build Notification\",
             \"sections\": [{
               \"activityTitle\": \"✅ Deployment Successful\",
-              \"text\": \"### 📌 Deployment Details\",   
+              \"text\": \"### 📌 Deployment Details\",
               \"facts\": [
                 {\"name\": \"Service\", \"value\": \"${_SERVICE_NAME}\"},
                 {\"name\": \"Project\", \"value\": \"${_PROJECT_ID}\"},
