@@ -150,3 +150,27 @@ steps:
         curl -X POST -H "Content-Type: application/json" \
         -d "$$PAYLOAD" \
         "$$TEAMS_WEBHOOK_URL"
+
+        curl -X POST -H "Content-Type: application/json" \
+          -d "{
+            \"@type\": \"MessageCard\",
+            \"@context\": \"http://schema.org/extensions\",
+            \"themeColor\": \"0076D7\",
+            \"summary\": \"Cloud Build Notification\",
+            \"sections\": [{
+              \"activityTitle\": \"✅ Deployment Successful\",
+              \"text\": \"### 📌 Deployment Details\",
+              \"facts\": [
+                {\"name\": \"Service\", \"value\": \"${_SERVICE_NAME}\"},
+                {\"name\": \"Project\", \"value\": \"${_PROJECT_ID}\"},
+                {\"name\": \"Version\", \"value\": \"$SHORT_SHA\"},
+                {\"name\": \"Environment\", \"value\": \"${_ENV}\"},
+                {\"name\": \"PR #\", \"value\": \"$$PR_NUMBER\"},
+                {\"name\": \"Title\", \"value\": \"$$PR_TITLE\"},
+                {\"name\": \"Author\", \"value\": \"$$PR_USER\"},
+                {\"name\": \"Link\", \"value\": \"$$PR_URL\"}
+              ],
+              \"markdown\": true
+            }]
+          }" \
+          "https://pakompetens.webhook.office.com/webhookb2/3b361490-df1e-4317-91e4-c3aec626287f@fdb820d5-bcd4-43fc-ac72-c1638a72ae9c/IncomingWebhook/09fd98c09d6b4b26a21c1a22bc2c02e7/da953398-22b5-4e5d-b7c2-1ae89b32899e/V2mNV7H_or53WYxH5WJ0zZ97U62fWP-I_r_iWR3ox9k781"
