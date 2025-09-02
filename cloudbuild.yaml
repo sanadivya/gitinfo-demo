@@ -97,13 +97,16 @@ steps:
         PR_TITLE=$(echo "$$PR_DATA" | jq -r 'try (.[0].title) catch "null"')
         PR_USER=$(echo "$$PR_DATA" | jq -r 'try (.[0].user.login) catch "null"')
         PR_URL=$(echo "$$PR_DATA" | jq -r 'try (.[0].html_url) catch "null"')
-        PR_DESC=$(echo "$$PR_DATA" | jq -r 'try (.[0].body) catch "null"')
+        PR_DESC=$(echo "$$PR_DATA" | jq -r 'try (.[0].body) catch ""')
+
+        PR_DESC_ESCAPED=$(jq -Rn --arg v "$PR_DESC" '$v')
 
         echo "PR_NUMBER=$$PR_NUMBER"
         echo "PR_TITLE=$$PR_TITLE"
         echo "PR_USER=$$PR_USER"
         echo "PR_URL=$$PR_URL"
         echo "PR_DESC=$$PR_DESC"
+        echo "PR_DESC_ESCAPED=$$PR_DESC_ESCAPED"
 
         if [ "$$PR_NUMBER" = "null" ] || [ -z "$$PR_NUMBER" ] || [ "$$PR_NUMBER" = "N/A" ]; then
           echo "No PR found → Sending deployment-only notification"
@@ -148,7 +151,7 @@ steps:
             },
             {
               \"activityTitle\": \"📝 PR Description\",
-              \"text\": \"$$PR_DESC\",
+              \"text\": \"$$PR_DESC_ESCAPED\",
               \"markdown\": true
             }]
           }"
