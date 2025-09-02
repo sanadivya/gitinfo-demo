@@ -84,10 +84,10 @@ steps:
           -H "Accept: application/vnd.github.groot-preview+json" \
           "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$REVISION_ID/pulls")
 
-        PR_NUMBER=$(echo "$$PR_DATA" | jq -r '.[0].number')
-        PR_TITLE=$(echo "$$PR_DATA" | jq -r '.[0].title')
-        PR_USER=$(echo "$$PR_DATA" | jq -r '.[0].user.login')
-        PR_URL=$(echo "$$PR_DATA" | jq -r '.[0].html_url')
+        PR_NUMBER=$(echo "$$PR_DATA" | jq -r 'if length > 0 then .[0].number else "N/A" end')
+        PR_TITLE=$(echo "$$PR_DATA" | jq -r 'if length > 0 then .[0].title else "N/A" end')
+        PR_USER=$(echo "$$PR_DATA" | jq -r 'if length > 0 then .[0].user.login else "N/A" end')
+        PR_URL=$(echo "$$PR_DATA" | jq -r 'if length > 0 then .[0].html_url else "N/A" end')
 
         echo "PR_NUMBER=$$PR_NUMBER" >> /workspace/pr_info.sh
         echo "PR_TITLE=$$PR_TITLE" >> /workspace/pr_info.sh
