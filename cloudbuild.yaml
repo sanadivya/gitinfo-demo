@@ -65,7 +65,7 @@ steps:
           echo "Deploy failed" > /workspace/failure_marker
         fi
 
-  - name: 'gcr.io/cloud-builders/curl'
+  - name: 'gcr.io/cloud-builders/git'
     id: Get-PR-Details
     secretEnv: ['GITHUB_TOKEN']
     entrypoint: bash
@@ -74,6 +74,8 @@ steps:
       - |
         set -e
 
+        apt-get update && apt-get install -y jq curl
+        
         echo "Fetching commit message for $$COMMIT_SHA ..."
         COMMIT_MSG=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
           "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA" | jq -r '.commit.message')
