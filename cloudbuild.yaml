@@ -96,7 +96,7 @@ steps:
 
   - name: 'gcr.io/cloud-builders/curl'
     id: Notify
-    waitFor: ["Build", "Push", "Deploy"]
+    waitFor: ["Build", "Push", "Deploy", "Get-PR-Details"]
     allowFailure: true
     secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
     args:
