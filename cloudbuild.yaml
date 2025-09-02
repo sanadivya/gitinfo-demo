@@ -85,7 +85,7 @@ steps:
           "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$REVISION_ID/pulls")
 
         echo "---- RAW PR_DATA ----"
-        echo "$PR_DATA"
+        echo "$$PR_DATA"
         echo "---------------------"
 
         PR_NUMBER=$(echo "$$PR_DATA" | jq -r 'try (.[0].number) catch "N/A"')
