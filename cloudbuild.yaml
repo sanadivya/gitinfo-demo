@@ -4,6 +4,7 @@ substitutions:
   _SERVICE_NAME: gitinfo-demo
   _REGION: europe-west1
   _REPO: gitinfo-demo
+  _REVISION_ID: "${REVISION_ID}"
   _SERVICE_ACCOUNT: 715553450089-compute@developer.gserviceaccount.com
 
 options:
@@ -76,11 +77,11 @@ steps:
 
         apt-get update && apt-get install -y jq curl
 
-        echo "Fetching commit message for $$COMMIT_SHA ..."
+        echo "Fetching PR details for commit: ${_REVISION_ID}"
 
         PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.groot-preview+json" \
-          "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA/pulls")
+          "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/${_REVISION_ID}/pulls")
 
         PR_TITLE=$(echo "$$PR_DATA" | jq -r '.title')
         PR_USER=$(echo "$$PR_DATA" | jq -r '.user.login')
