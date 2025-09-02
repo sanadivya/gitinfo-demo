@@ -93,10 +93,10 @@ steps:
         echo "$$PR_DATA"
         echo "---------------------"
 
-        PR_NUMBER=$(echo "$$PR_DATA" | jq -r 'try (.[0].number) catch "N/A"')
-        PR_TITLE=$(echo "$$PR_DATA" | jq -r 'try (.[0].title) catch "N/A"')
-        PR_USER=$(echo "$$PR_DATA" | jq -r 'try (.[0].user.login) catch "N/A"')
-        PR_URL=$(echo "$$PR_DATA" | jq -r 'try (.[0].html_url) catch "N/A"')
+        PR_NUMBER=$(echo "$$PR_DATA" | jq -r 'try (.[0].number) catch "null"')
+        PR_TITLE=$(echo "$$PR_DATA" | jq -r 'try (.[0].title) catch "null"')
+        PR_USER=$(echo "$$PR_DATA" | jq -r 'try (.[0].user.login) catch "null"')
+        PR_URL=$(echo "$$PR_DATA" | jq -r 'try (.[0].html_url) catch "null"')
 
         echo "PR_NUMBER=$$PR_NUMBER"
         echo "PR_TITLE=$$PR_TITLE"
