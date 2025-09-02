@@ -82,7 +82,7 @@ steps:
 
         PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.groot-preview+json" \
-          "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$REVISION_ID/pulls")
+          "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/${_REVISION_ID}/pulls")
 
         echo "---- RAW PR_DATA ----"
         echo "$$PR_DATA"
