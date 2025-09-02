@@ -78,6 +78,7 @@ steps:
         apt-get update && apt-get install -y jq curl
 
         echo "Fetching PR details for commit: ${_REVISION_ID}"
+        echo "${_REVISION_ID}"
 
         PR_DATA=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.groot-preview+json" \
