@@ -66,6 +66,43 @@ steps:
         fi
 
   - name: 'gcr.io/cloud-builders/curl'
+    id: Get-PR-Details
+    secretEnv: ['GITHUB_TOKEN']
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+
+        echo "Fetching commit message for $$COMMIT_SHA ..."
+        COMMIT_MSG=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" \
+          "https://api.github.com/repos/sanadivya/gitinfo-demo/commits/$$COMMIT_SHA" | jq -r '.commit.message')
+
+        echo "Commit message: $$COMMIT_MSG"
+
+        PR_NUMBER=$(echo "$$COMMIT_MSG" | grep -oE '#[0-9]+' | tr -d '#')
+
+        if [ -z "$$PR_NUMBER" ]; then
+          echo "❌ Could not extract PR number"
+          exit 1
+        fi
+
+        echo "Found PR #$$PR_NUMBER"
+
+        PR_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          "https://api.github.com/repos/sanadivya/gitinfo-demo/pulls/$$PR_NUMBER")
+
+        PR_TITLE=$(echo "$$PR_DATA" | jq -r '.title')
+        PR_USER=$(echo "$$PR_DATA" | jq -r '.user.login')
+        PR_URL=$(echo "$$PR_DATA" | jq -r '.html_url')
+
+        echo "PR_TITLE=$PR_TITLE" >> $$
+        echo "PR_USER=$PR_USER" >> $$
+        echo "PR_URL=$PR_URL" >> $$
+        echo "PR_NUMBER=$PR_NUMBER" >> $$
+
+
+  - name: 'gcr.io/cloud-builders/curl'
     id: Notify
     waitFor: ["Build", "Push", "Deploy"]
     allowFailure: true
@@ -85,7 +122,11 @@ steps:
               {\"name\": \"Service\", \"value\": \"${_SERVICE_NAME}\"},
               {\"name\": \"Project\", \"value\": \"${_PROJECT_ID}\"},
               {\"name\": \"Version\", \"value\": \"$SHORT_SHA\"},
-              {\"name\": \"Environment\", \"value\": \"${_ENV}\"}
+              {\"name\": \"Environment\", \"value\": \"${_ENV}\"},
+              {\"name\": \"PR #\", \"value\": \"$$PR_NUMBER\"},
+              {\"name\": \"Title\", \"value\": \"$$PR_TITLE\"},
+              {\"name\": \"Author\", \"value\": \"$$PR_USER\"},
+              {\"name\": \"Link\", \"value\": \"$$PR_URL\"}
             ],
             \"markdown\": true
           }]
