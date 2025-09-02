@@ -100,7 +100,7 @@ steps:
     waitFor: ["Build", "Push", "Deploy", "Get-PR-Details"]
     allowFailure: true
     env:
-      - $(cat /workspace/pr_info.env)
+      - $$(cat /workspace/pr_info.env)
     secretEnv: ['GITHUB_TOKEN', 'TEAMS_WEBHOOK_URL', 'TEAMS_WEBHOOK_FAILURE_URL']
     args:
       [
