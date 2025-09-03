@@ -99,6 +99,8 @@ steps:
         PR_URL=$(echo "$$PR_DATA" | jq -r 'try (.[0].html_url) catch "null"')
         PR_DESC=$(echo "$$PR_DATA" | jq -r 'try (.[0].body) catch ""')
 
+        PR_DESC_ESCAPED=$(echo "$$PR_DESC" | sed ':a;N;$!ba;s/\n/<br\/>/g')
+
         echo "PR_NUMBER=$$PR_NUMBER"
         echo "PR_TITLE=$$PR_TITLE"
         echo "PR_USER=$$PR_USER"
@@ -149,7 +151,7 @@ steps:
             },
             {
               \"activityTitle\": \"📝 PR Description\",
-              \"text\": \"$$PR_DESC\",
+              \"text\": \"$$PR_DESC_ESCAPED\",
               \"markdown\": true
             }]
           }"
