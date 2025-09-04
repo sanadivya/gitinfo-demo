@@ -136,7 +136,7 @@ steps:
             \"summary\": \"Cloud Build Notification\",
             \"sections\": [{
               \"activityTitle\": \"✅ Deployment Successful\",
-              \"text\": \"**📌 Deployment Details**\n- Service: ${_SERVICE_NAME}\n- Project: ${_PROJECT_ID}\n- Version: $SHORT_SHA\n- Environment: ${_ENV}\n\n**🔀 PR Details**\n- PR Number: $$#PR_NUMBER\n- Title: $$PR_TITLE\n- Author: $$PR_USER\",
+              "text": "**📌 Deployment Details**\n- **Service**: ${_SERVICE_NAME}\n- **Project**: ${_PROJECT_ID}\n- **Version**: $SHORT_SHA\n- **Environment**: ${_ENV}\n\n**🔀 PR Details**\n- **PR #**: $$PR_NUMBER\n- **Title**: $$PR_TITLE\n- **Author**: $$PR_USER",
               \"markdown\": true
             },
             {
