@@ -97,16 +97,13 @@ steps:
         PR_TITLE=$(echo "$$PR_DATA" | jq -r 'try (.[0].title) catch "null"')
         PR_USER=$(echo "$$PR_DATA" | jq -r 'try (.[0].user.login) catch "null"')
         PR_URL=$(echo "$$PR_DATA" | jq -r 'try (.[0].html_url) catch "null"')
-        PR_DESC=$(echo "$$PR_DATA" | jq -r 'try (.[0].body) catch ""')
-
-        PR_DESC_ESCAPED=$(echo "$$PR_DESC" | sed ':a;N;$!ba;s/\n/<br\/>/g')
+        PR_DESC=$(echo "$PR_DATA" | jq -r 'try (.[0].body) catch "null"')
 
         echo "PR_NUMBER=$$PR_NUMBER"
         echo "PR_TITLE=$$PR_TITLE"
         echo "PR_USER=$$PR_USER"
         echo "PR_URL=$$PR_URL"
         echo "PR_DESC=$$PR_DESC"
-        echo "PR_DESC_ESCAPED=$$PR_DESC_ESCAPED"
 
         if [ "$$PR_NUMBER" = "null" ] || [ -z "$$PR_NUMBER" ] || [ "$$PR_NUMBER" = "N/A" ]; then
           echo "No PR found → Sending deployment-only notification"
@@ -136,15 +133,50 @@ steps:
             \"summary\": \"Cloud Build Notification\",
             \"sections\": [{
               \"activityTitle\": \"✅ Deployment Successful\",
-              \"text\": \"**📌 Deployment Details**\n- Service: ${_SERVICE_NAME}\n- Project: ${_PROJECT_ID}\n- Version: $SHORT_SHA\n- Environment: ${_ENV}\n\n**🔀 PR Details**\n- PR #: $$PR_NUMBER\n- Title: $$PR_TITLE\n- Author: $$PR_USER\n- Link: [View PR]($$PR_URL)\n- Description:\n$$PR_DESC_ESCAPED\",
-              \"markdown\": true
-            },
-            {
-              \"activityTitle\": \"📝 PR Description\",
-              \"text\": \"$$PR_DESC_ESCAPED\",
+              \"text\": \"### 📌 Deployment Details with PR Info\",
+              \"facts\": [
+                {\"name\": \"Service\", \"value\": \"${_SERVICE_NAME}\"},
+                {\"name\": \"Project\", \"value\": \"${_PROJECT_ID}\"},
+                {\"name\": \"Version\", \"value\": \"$SHORT_SHA\"},
+                {\"name\": \"Environment\", \"value\": \"${_ENV}\"},
+                {\"name\": \"PR #\", \"value\": \"$$PR_NUMBER\"},
+                {\"name\": \"Title\", \"value\": \"$$PR_TITLE\"},
+                {\"name\": \"Author\", \"value\": \"$$PR_USER\"},
+                {\"name\": \"Link\", \"value\": \"$$PR_URL\"}
+              ],
               \"markdown\": true
             }]
           }"
+        fi
+
+        else
+          echo "PR found → Sending deployment + PR notification"
+        PAYLOAD="{
+          \"@type\": \"MessageCard\",
+          \"@context\": \"http://schema.org/extensions\",
+          \"themeColor\": \"0076D7\",
+          \"summary\": \"Cloud Build Notification\",
+          \"sections\": [{
+            \"activityTitle\": \"✅ Deployment Successful\",
+            \"text\": \"### 📌 Deployment Details with PR Info\",
+            \"facts\": [
+              {\"name\": \"Service\", \"value\": \"${_SERVICE_NAME}\"},
+              {\"name\": \"Project\", \"value\": \"${_PROJECT_ID}\"},
+              {\"name\": \"Version\", \"value\": \"$SHORT_SHA\"},
+              {\"name\": \"Environment\", \"value\": \"${_ENV}\"},
+              {\"name\": \"PR #\", \"value\": \"$PR_NUMBER\"},
+              {\"name\": \"Title\", \"value\": \"$PR_TITLE\"},
+              {\"name\": \"Author\", \"value\": \"$PR_USER\"},
+              {\"name\": \"Link\", \"value\": \"$PR_URL\"}
+            ],
+            \"markdown\": true
+          },
+          {
+            \"activityTitle\": \"📝 PR Description\",
+            \"text\": \"$PR_DESC\",
+            \"markdown\": true
+          }]
+        }"
         fi
 
         curl -X POST -H "Content-Type: application/json" \

@@ -1,5 +1,5 @@
 # Use Node.js LTS base image
-FROM node:20-slim
+FROM node:20.19.4-alpine3.21
 
 WORKDIR /app
 
