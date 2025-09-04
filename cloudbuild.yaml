@@ -99,6 +99,10 @@ steps:
         PR_URL=$(echo "$$PR_DATA" | jq -r 'try (.[0].html_url) catch "null"')
         PR_DESC=$(echo "$$PR_DATA" | jq -r 'try (.[0].body) catch ""')
 
+        USER_API=$(echo "$$PR_DATA" | jq -r 'try (.[0].user.url) catch "null"')
+        PR_USER_NAME=$(curl -s -H "Authorization: token $$GITHUB_TOKEN" "$$USER_API" | jq -r 'try .name catch "Unknown User"')
+
+
         PR_DESC_ESCAPED=$(echo "$$PR_DESC" | sed ':a;N;$!ba;s/\n/<br\/>/g')
 
         echo "PR_NUMBER=$$PR_NUMBER"
@@ -136,7 +140,7 @@ steps:
             \"summary\": \"Cloud Build Notification\",
             \"sections\": [{
               \"activityTitle\": \"**✅ New version deployed to FE ${_ENV} environment**\",
-              \"text\": \"**📌 Deployment Details**\n- **Service**: ${_SERVICE_NAME}\n- **Project**: ${_PROJECT_ID}\n- **Version**: $SHORT_SHA\n- **Environment**: ${_ENV}\n\n**🔀 PR Details**\n- **PR #**: $$PR_NUMBER\n- **Title**: $$PR_TITLE\n- **Author**: $$PR_USER\",
+              \"text\": \"**📌 Deployment Details**\n- **Service**: ${_SERVICE_NAME}\n- **Project**: ${_PROJECT_ID}\n- **Version**: $SHORT_SHA\n- **Environment**: ${_ENV}\n\n**🔀 PR Details**\n- **PR #**: $$PR_NUMBER\n- **Title**: $$PR_TITLE\n- **Author**: $$PR_USER_NAME (@$$PR_USER)\",
               \"markdown\": true
             },
             {
